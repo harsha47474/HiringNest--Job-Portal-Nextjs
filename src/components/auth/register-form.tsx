@@ -1,21 +1,21 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/src/lib/utils"
+import { Button } from "@/src/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/src/components/ui/card"
 
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
+} from "@/src/components/ui/field"
 
 import {
   Select,
@@ -23,9 +23,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/src/components/ui/select"
 
-import { Input } from "@/components/ui/input"
+import { Input } from "@/src/components/ui/input"
 import React, { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 
@@ -159,7 +159,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                       }
                       className="pr-9"
                     />
-                      <PasswordToggle
+                    <PasswordToggle
                       label="password"
                       visible={showPassword}
                       onToggle={() => setShowPassword((prev) => !prev)}
