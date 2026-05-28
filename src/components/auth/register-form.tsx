@@ -26,8 +26,11 @@ import {
 } from "@/src/components/ui/select"
 
 import { Input } from "@/src/components/ui/input"
-import React, { useState } from "react"
+import React, { FormEvent, useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { registrationAction } from "@/src/lib/actions/authActions"
+import { toast } from "sonner"
+
 
 function PasswordToggle({
   visible,
@@ -78,10 +81,24 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
     role: "applicant",
   })
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formDetails)
-    // TODO: send formDetails to backend
+    const registrationData = {
+      name: formDetails.name.trim(),
+      userName: formDetails.username.trim(),
+      email: formDetails.email.toLowerCase().trim(),
+      password: formDetails.password,
+      role: formDetails.role,
+    }
+
+    if(formDetails.password !== formDetails.confirmPasswordd) {
+      toast.error("Passwords do not match");
+      return
+    }
+
+    const result = await registrationAction(registrationData);
+    if(result.success) toast.success(result.message);
+    else toast.error(result.message);
   }
 
   const handleInputChange = (name: keyof FormDetails, value: string) => {
@@ -203,6 +220,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 <FieldLabel htmlFor="role">Role</FieldLabel>
                 <Select
                   value={formDetails.role}
+                  name="role"
                   onValueChange={(value: "applicant" | "employee") =>
                     handleInputChange("role", value)
                   }

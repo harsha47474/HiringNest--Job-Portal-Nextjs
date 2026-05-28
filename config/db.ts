@@ -5,4 +5,4 @@ const pool = mysql2.createPool({
     uri: process.env.DATABASE_URL as string,
 })
 
-const db = drizzle(pool);
+export const db = drizzle(pool);

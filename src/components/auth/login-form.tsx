@@ -18,8 +18,10 @@ import {
 } from "@/src/components/ui/field"
 
 import { Input } from "@/src/components/ui/input"
-import React, { useState } from "react"
+import React, { FormEvent, useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { loginAction } from "@/src/lib/actions/authActions"
+import { toast } from "sonner"
 
 function PasswordToggle({
   visible,
@@ -60,10 +62,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     password: "",
   })
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formDetails)
-    // TODO: send formDetails to backend
+    const loginData = {
+      email: formDetails.email.toLowerCase().trim(),
+      password: formDetails.password,
+    }
+
+    const result = await loginAction(loginData);
+    if (result.success) toast.success(result.message);
+    else toast.error(result.message);
   }
 
   const handleInputChange = (name: keyof FormDetails, value: string) => {
