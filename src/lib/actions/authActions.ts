@@ -4,21 +4,18 @@ import { users } from "@/src/drizzle/schema";
 import { db } from "@/config/db";
 import argon2 from "argon2";
 import { eq, or } from "drizzle-orm";
+import { baseRegisterSchema, BaseRegisterSchemaType, loginSchema, LoginSchemaType } from "@/src/lib/validations/authValidations";
 
 
 // Registration action
-
-type RegistrationData = {
-    name: string;
-    userName: string;
-    email: string;
-    password: string;
-    role: "applicant" | "employee";
-}
-
-export const registrationAction = async (data: RegistrationData) => {
+export const registrationAction = async (data: BaseRegisterSchemaType) => {
     try {
-        const { name, userName, email, password, role } = data;
+        const { data: validatedData, error } = baseRegisterSchema.safeParse(data);
+        if (error) {
+            return { success: false, message: "Invalid input data" };
+        }
+
+        const { name, userName, email, password, role } = validatedData;
 
         const [existingUser] = await db.select().from(users).where(or(eq(users.email, email), eq(users.userName, userName)));
 
@@ -44,15 +41,14 @@ export const registrationAction = async (data: RegistrationData) => {
 
 
 // Login action
-
-type LoginData = {
-    email: string;
-    password: string;
-}
-
-export const loginAction = async (data: LoginData) => {
+export const loginAction = async (data: LoginSchemaType) => {
     try {
-        const { email, password } = data;
+        const { data: validatedData, error } = loginSchema.safeParse(data);
+        if (error) {
+            return { success: false, message: "Invalid input data" };
+        }
+
+        const { email, password } = validatedData;
 
         const [user] = await db.select().from(users).where(eq(users.email, email));
         if (!user) {

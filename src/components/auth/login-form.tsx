@@ -22,6 +22,9 @@ import React, { FormEvent, useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import { loginAction } from "@/src/lib/actions/authActions"
 import { toast } from "sonner"
+import { useForm } from "react-hook-form"
+import { loginSchema, LoginSchemaType } from "@/src/lib/validations/authValidations"
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function PasswordToggle({
   visible,
@@ -50,32 +53,17 @@ function PasswordToggle({
   )
 }
 
-interface FormDetails {
-  email: string
-  password: string
-}
-
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false)
-  const [formDetails, setFormDetails] = useState<FormDetails>({
-    email: "",
-    password: "",
-  })
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    const loginData = {
-      email: formDetails.email.toLowerCase().trim(),
-      password: formDetails.password,
-    }
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginSchemaType>({
+    resolver: zodResolver(loginSchema),
+  });
 
-    const result = await loginAction(loginData);
+  const onSubmit = async (data: LoginSchemaType) => {
+    const result = await loginAction(data);
     if (result.success) toast.success(result.message);
     else toast.error(result.message);
-  }
-
-  const handleInputChange = (name: keyof FormDetails, value: string) => {
-    setFormDetails((prev) => ({ ...prev, [name]: value }))
   }
 
   return (
@@ -88,7 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               {/* Email */}
               <Field>
@@ -98,11 +86,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   type="email"
                   placeholder="m@example.com"
                   required
-                  name="email"
-                  value={formDetails.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  {...register("email")}
                 />
               </Field>
+              {errors.email && (
+                <FieldDescription className="text-red-500">
+                  {errors.email.message}
+                </FieldDescription>
+              )}
+
 
               {/* Password + Confirm Password */}
               <div className=" gap-4">
@@ -112,14 +104,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      name="password"
                       required
                       placeholder="Enter your password"
                       autoComplete="new-password"
-                      value={formDetails.password}
-                      onChange={(e) =>
-                        handleInputChange("password", e.target.value)
-                      }
+                      {...register("password")}
                       className="pr-9"
                     />
                     <PasswordToggle
@@ -129,6 +117,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     />
                   </div>
                 </Field>
+                {errors.password && (
+                  <FieldDescription className="text-red-500">
+                    {errors.password.message}
+                  </FieldDescription>
+                )}
               </div>
 
               {/* Submit */}

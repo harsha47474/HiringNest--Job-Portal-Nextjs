@@ -26,11 +26,13 @@ import {
 } from "@/src/components/ui/select"
 
 import { Input } from "@/src/components/ui/input"
-import React, { FormEvent, useState } from "react"
+import React, { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import { registrationAction } from "@/src/lib/actions/authActions"
 import { toast } from "sonner"
-
+import { Controller, useForm } from "react-hook-form"
+import { registerSchemaWithConfirm, RegisterSchemaWithConfirmType } from "@/src/lib/validations/authValidations"
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function PasswordToggle({
   visible,
@@ -59,50 +61,18 @@ function PasswordToggle({
   )
 }
 
-interface FormDetails {
-  name: string
-  username: string
-  email: string
-  password: string
-  confirmPasswordd: string
-  role: "applicant" | "employee"
-}
-
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const [formDetails, setFormDetails] = useState<FormDetails>({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPasswordd: "",
-    role: "applicant",
-  })
+  const { register, handleSubmit, formState: { errors }, control } = useForm<RegisterSchemaWithConfirmType>({
+    resolver: zodResolver(registerSchemaWithConfirm),
+  });
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    const registrationData = {
-      name: formDetails.name.trim(),
-      userName: formDetails.username.trim(),
-      email: formDetails.email.toLowerCase().trim(),
-      password: formDetails.password,
-      role: formDetails.role,
-    }
-
-    if(formDetails.password !== formDetails.confirmPasswordd) {
-      toast.error("Passwords do not match");
-      return
-    }
-
-    const result = await registrationAction(registrationData);
-    if(result.success) toast.success(result.message);
+  const onSubmit = async (data: RegisterSchemaWithConfirmType) => {
+    const result = await registrationAction(data);
+    if (result.success) toast.success(result.message);
     else toast.error(result.message);
-  }
-
-  const handleInputChange = (name: keyof FormDetails, value: string) => {
-    setFormDetails((prev) => ({ ...prev, [name]: value }))
   }
 
   return (
@@ -115,7 +85,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               {/* Full Name */}
               <Field>
@@ -124,12 +94,15 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                   id="name"
                   type="text"
                   placeholder="John Doe"
-                  name="name"
                   required
-                  value={formDetails.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  {...register("name")}
                 />
               </Field>
+              {errors.name && (
+                <FieldDescription className="text-red-500">
+                  {errors.name.message}
+                </FieldDescription>
+              )}
 
               {/* Username */}
               <Field>
@@ -138,12 +111,15 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                   id="username"
                   type="text"
                   placeholder="johndoe123"
-                  name="username"
                   required
-                  value={formDetails.username}
-                  onChange={(e) => handleInputChange("username", e.target.value)}
+                  {...register("userName")}
                 />
               </Field>
+              {errors.userName && (
+                <FieldDescription className="text-red-500">
+                  {errors.userName.message}
+                </FieldDescription>
+              )}
 
               {/* Email */}
               <Field>
@@ -153,11 +129,14 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                   type="email"
                   placeholder="m@example.com"
                   required
-                  name="email"
-                  value={formDetails.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  {...register("email")}
                 />
               </Field>
+              {errors.email && (
+                <FieldDescription className="text-red-500">
+                  {errors.email.message}
+                </FieldDescription>
+              )}
 
               {/* Password + Confirm Password */}
               <div className="grid grid-cols-2 gap-4">
@@ -167,13 +146,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      name="password"
                       required
                       autoComplete="new-password"
-                      value={formDetails.password}
-                      onChange={(e) =>
-                        handleInputChange("password", e.target.value)
-                      }
+                      {...register("password")}
                       className="pr-9"
                     />
                     <PasswordToggle
@@ -183,6 +158,11 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     />
                   </div>
                 </Field>
+                {errors.password && (
+                  <FieldDescription className="text-red-500">
+                    {errors.password.message}
+                  </FieldDescription>
+                )}
 
                 <Field>
                   <FieldLabel htmlFor="confirm-password">
@@ -192,13 +172,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     <Input
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPasswordd"
+                      {...register("confirmPassword")}
                       required
                       autoComplete="new-password"
-                      value={formDetails.confirmPasswordd}
-                      onChange={(e) =>
-                        handleInputChange("confirmPasswordd", e.target.value)
-                      }
                       className="pr-9"
                     />
                     <PasswordToggle
@@ -210,6 +186,11 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     />
                   </div>
                 </Field>
+                {errors.confirmPassword && (
+                  <FieldDescription className="text-red-500">
+                    {errors.confirmPassword.message}
+                  </FieldDescription>
+                )}
               </div>
               <FieldDescription>
                 Must be at least 8 characters long.
@@ -218,21 +199,24 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
               {/* Role Select */}
               <Field>
                 <FieldLabel htmlFor="role">Role</FieldLabel>
-                <Select
-                  value={formDetails.role}
+
+                <Controller
                   name="role"
-                  onValueChange={(value: "applicant" | "employee") =>
-                    handleInputChange("role", value)
-                  }
-                >
-                  <SelectTrigger id="role">
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="applicant">Applicant</SelectItem>
-                    <SelectItem value="employee">Employee</SelectItem>
-                  </SelectContent>
-                </Select>
+                  control={control}
+                  defaultValue="applicant"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="applicant">Applicant</SelectItem>
+                        <SelectItem value="employee">Employee</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.role && <FieldDescription className="text-red-500">{errors.role.message}</FieldDescription>}
               </Field>
 
               {/* Submit */}
