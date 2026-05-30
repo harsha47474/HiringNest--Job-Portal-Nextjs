@@ -5,7 +5,7 @@ import { db } from "@/config/db";
 import argon2 from "argon2";
 import { eq, or } from "drizzle-orm";
 import { baseRegisterSchema, BaseRegisterSchemaType, loginSchema, LoginSchemaType } from "@/src/lib/validations/authValidations";
-
+import { createUserSessionAndSetCookie } from "@/src/lib/actions/sessionAction";
 
 // Registration action
 export const registrationAction = async (data: BaseRegisterSchemaType) => {
@@ -30,7 +30,9 @@ export const registrationAction = async (data: BaseRegisterSchemaType) => {
 
         console.log("Received form data:", { name, userName, email, password, role }); //logs (have to remove it later)
         const hashedPassword = await argon2.hash(password);
-        await db.insert(users).values({ name, userName, email, password: hashedPassword, role });
+        const [result] = await db.insert(users).values({ name, userName, email, password: hashedPassword, role });
+
+        await createUserSessionAndSetCookie(result.insertId);
 
         return { success: true, message: "Registration successful" };
     } catch (error) {
@@ -59,6 +61,8 @@ export const loginAction = async (data: LoginSchemaType) => {
         if (!isValidPassword) {
             return { success: false, message: "Invalid email or password" };
         }
+
+        await createUserSessionAndSetCookie(user.id);
 
         return { success: true, message: "Login successful" };
 
