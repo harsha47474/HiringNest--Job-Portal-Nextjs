@@ -33,6 +33,7 @@ import { toast } from "sonner"
 import { Controller, useForm } from "react-hook-form"
 import { registerSchemaWithConfirm, RegisterSchemaWithConfirmType } from "@/src/lib/validations/authValidations"
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from 'next/navigation'
 
 function PasswordToggle({
   visible,
@@ -62,6 +63,8 @@ function PasswordToggle({
 }
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
+  const router = useRouter();
+  
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -71,7 +74,15 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
 
   const onSubmit = async (data: RegisterSchemaWithConfirmType) => {
     const result = await registrationAction(data);
-    if (result.success) toast.success(result.message);
+    if (result.success) {
+      if (data.role === "employee") {
+        router.push("/employer/dashboard");
+        toast.success(result.message);
+      }else {
+        router.push("/applicant/dashboard");
+        toast.success(result.message);
+      }
+    }
     else toast.error(result.message);
   }
 

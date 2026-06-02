@@ -25,6 +25,7 @@ import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { loginSchema, LoginSchemaType } from "@/src/lib/validations/authValidations"
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from 'next/navigation'
 
 function PasswordToggle({
   visible,
@@ -54,6 +55,7 @@ function PasswordToggle({
 }
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginSchemaType>({
@@ -62,7 +64,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
   const onSubmit = async (data: LoginSchemaType) => {
     const result = await loginAction(data);
-    if (result.success) toast.success(result.message);
+    if (result.success) {
+      if (result.role === "employee") {
+        router.push("/employer/dashboard");
+        toast.success(result.message);
+      } else {
+        router.push("/applicant/dashboard");
+        toast.success(result.message);
+      }
+    }
     else toast.error(result.message);
   }
 

@@ -51,3 +51,36 @@ export const createUserSessionAndSetCookie = async (userId: number) => {
     });
 };
 
+
+
+export const getUserBySessionToken = async (token: string) => {
+    const hashedToken = crypto.createHash("sha-256").update(token).digest("hex");
+
+    const [user] = await db.select({
+        id: users.id,
+        session: {
+            id: sessions.id,
+            expiresAt: sessions.expiresAt,
+            userAgent: sessions.userAgent,
+            ipAddress: sessions.ipAddress,
+        },
+        name: users.name,
+        userName: users.userName,
+        role: users.role,
+        email: users.email,
+        createdAt: users.created_at,
+        updatedAt: users.updatedAt,
+    }).from(sessions).where(eq(sessions.id, hashedToken)).innerJoin(users, eq(sessions.userId, users.id));
+
+    if (!user) {
+        return null;
+    }
+
+    if(user.session.expiresAt < new Date()) {
+        await db.delete(sessions).where(eq(sessions.id, user.session.id));
+        return null;
+    }
+
+    return user;
+}
+

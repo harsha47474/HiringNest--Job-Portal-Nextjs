@@ -64,7 +64,7 @@ export const loginAction = async (data: LoginSchemaType) => {
 
         await createUserSessionAndSetCookie(user.id);
 
-        return { success: true, message: "Login successful" };
+        return { success: true, message: "Login successful", role: user.role };
 
     } catch (error) {
         console.error("Error during login:", error);
