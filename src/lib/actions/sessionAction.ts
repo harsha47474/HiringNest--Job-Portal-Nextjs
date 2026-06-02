@@ -2,10 +2,9 @@ import { cookies, headers } from "next/headers";
 import crypto from "crypto";
 import { getIPAddress } from "@/src/helper/generateIP";
 import { sessions, users } from "@/src/drizzle/schema";
-import { db } from "@/config/db";
-import { SESSION_LIFETIME, SESSION_REFRESH_TIME } from "@/config/constant";
+import { db } from "@/src/config/db";
+import { SESSION_LIFETIME} from "@/src/config/constant";
 import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import { generateSessionToken } from "@/src/helper/generateToken";
 
 type CreateSessionData = {
@@ -76,7 +75,7 @@ export const getUserBySessionToken = async (token: string) => {
         return null;
     }
 
-    if(user.session.expiresAt < new Date()) {
+    if (user.session.expiresAt < new Date()) {
         await db.delete(sessions).where(eq(sessions.id, user.session.id));
         return null;
     }

@@ -1,7 +1,7 @@
 "use server"
 
 import { users } from "@/src/drizzle/schema";
-import { db } from "@/config/db";
+import { db } from "@/src/config/db";
 import argon2 from "argon2";
 import { eq, or } from "drizzle-orm";
 import { baseRegisterSchema, BaseRegisterSchemaType, loginSchema, LoginSchemaType } from "@/src/lib/validations/authValidations";
