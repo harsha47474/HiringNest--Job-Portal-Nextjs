@@ -1,4 +1,5 @@
 import React from "react";
+import { EmployerProfileCompletionStatus } from "./EmployerProfileStatus";
 
 const Dashboard = ({ user }: { user: any }) => {
     return (
@@ -7,6 +8,10 @@ const Dashboard = ({ user }: { user: any }) => {
             <p className="text-sm text-gray-600 mb-6">
                 Welcome back, {user.name}. Here's what's happening with your hiring.
             </p>
+
+            <div className="mb-6">
+                <EmployerProfileCompletionStatus />
+            </div>
 
             {/* Stats cards */}
             <div className="grid grid-cols-4 gap-4 mb-6">
@@ -54,8 +59,8 @@ const RecentJobs = () => (
                 </div>
                 <span
                     className={`text-xs font-medium px-2 py-1 rounded-md ${job.status === "Active"
-                            ? "bg-green-50 text-green-700"
-                            : "bg-gray-100 text-gray-600"
+                        ? "bg-green-50 text-green-700"
+                        : "bg-gray-100 text-gray-600"
                         }`}
                 >
                     {job.status}
