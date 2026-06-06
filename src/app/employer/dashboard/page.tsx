@@ -1,13 +1,13 @@
 import { Button } from "@/src/components/ui/button";
 import { logoutAction } from "@/src/lib/actions/authActions";
+import Dashboard from "@/src/components/employer/EmployerDashboard";
+import { getCurrentUser } from "@/src/helper/getCurrentUser";
 
-export default function EmployerDashboard() {
+
+export default async function EmployerDashboard() {
     return (
         <div>
-            <h1>Employer Dashboard</h1>
-            <Button variant="outline" onClick={logoutAction}>
-                Logout
-            </Button>
+            <Dashboard user={await getCurrentUser()} />
         </div>
     )
 }
