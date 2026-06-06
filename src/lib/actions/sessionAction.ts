@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { getIPAddress } from "@/src/helper/generateIP";
 import { sessions, users } from "@/src/drizzle/schema";
 import { db } from "@/src/config/db";
-import { SESSION_LIFETIME} from "@/src/config/constant";
+import { SESSION_LIFETIME } from "@/src/config/constant";
 import { eq } from "drizzle-orm";
 import { generateSessionToken } from "@/src/helper/generateToken";
 
@@ -12,6 +12,7 @@ type CreateSessionData = {
     ip: string;
     userId: number;
     token: string;
+    tx?: DBClient;
 };
 
 const createUserSession = async ({
@@ -19,10 +20,11 @@ const createUserSession = async ({
     userId,
     userAgent,
     ip,
+    tx = db,
 }: CreateSessionData) => {
     const hashedToken = crypto.createHash("sha-256").update(token).digest("hex");
 
-    const [session] = await db.insert(sessions).values({
+    const [session] = await tx.insert(sessions).values({
         id: hashedToken,
         userId,
         expiresAt: new Date(Date.now() + SESSION_LIFETIME * 1000),
@@ -33,13 +35,14 @@ const createUserSession = async ({
     return session;
 };
 
+type DBClient = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export const createUserSessionAndSetCookie = async (userId: number) => {
+export const createUserSessionAndSetCookie = async (userId: number, tx: DBClient = db) => {
     const userAgent = (await headers()).get("user-agent") || "Unknown";
     const ip = await getIPAddress();
     const token = generateSessionToken();
 
-    await createUserSession({ token, userId, userAgent, ip });
+    await createUserSession({ token, userId, userAgent, ip, tx });
 
     const cookieStore = await cookies();
 

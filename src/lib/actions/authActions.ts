@@ -20,22 +20,24 @@ export const registrationAction = async (data: BaseRegisterSchemaType) => {
 
         const { name, userName, email, password, role } = validatedData;
 
-        const [existingUser] = await db.select().from(users).where(or(eq(users.email, email), eq(users.userName, userName)));
+        await db.transaction(async (tx) => {
+            const [existingUser] = await tx.select().from(users).where(or(eq(users.email, email), eq(users.userName, userName)));
 
-        if (existingUser) {
-            if (existingUser.email === email) {
-                return { success: false, message: "Email already in use" };
-            } else {
-                return { success: false, message: "Username already exists" };
+            if (existingUser) {
+                if (existingUser.email === email) {
+                    return { success: false, message: "Email already in use" };
+                } else {
+                    return { success: false, message: "Username already exists" };
+                }
             }
-        }
 
 
-        console.log("Received form data:", { name, userName, email, password, role }); //logs (have to remove it later)
-        const hashedPassword = await argon2.hash(password);
-        const [result] = await db.insert(users).values({ name, userName, email, password: hashedPassword, role });
+            console.log("Received form data:", { name, userName, email, password, role }); //logs (have to remove it later)
+            const hashedPassword = await argon2.hash(password);
+            const [result] = await tx.insert(users).values({ name, userName, email, password: hashedPassword, role });
 
-        await createUserSessionAndSetCookie(result.insertId);
+            await createUserSessionAndSetCookie(result.insertId, tx);
+        });
 
         return { success: true, message: "Registration successful" };
     } catch (error) {
@@ -87,7 +89,7 @@ export const logoutAction = async () => {
         const hashedToken = crypto.createHash("sha-256").update(token).digest("hex");
         await db.delete(sessions).where(eq(sessions.id, hashedToken));
     }
-    
+
     cookieStore.delete("session");
     return redirect("/login");
 }
