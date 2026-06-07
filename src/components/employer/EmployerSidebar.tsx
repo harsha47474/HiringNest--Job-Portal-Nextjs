@@ -1,6 +1,5 @@
 "use client";
 
-import { getCurrentUser } from "../../helper/getCurrentUser";
 import React from "react";
 import {
   LayoutDashboard,
@@ -14,10 +13,17 @@ import {
   LogOut,
 } from "lucide-react";
 import { logoutAction } from "@/src/lib/actions/authActions";
+import Link from "next/link";
 
-const EmployerSidebar = ({ user }: { user: any }) => {
+const EmployerSidebar = ({
+  user,
+  className = "",
+}: {
+  user: any;
+  className?: string;
+}) => {
   return (
-    <div className="flex flex-col h-screen w-90 bg-white border-r border-gray-200 p-4">
+    <div className={`flex flex-col fixed left-0 top-0 h-screen bg-white border-r border-gray-200 p-4 ${className}`}>
       {/* Header */}
       <div className="flex items-center space-x-3 mb-6">
         <div className="flex items-center justify-center h-10 w-10 rounded-md bg-blue-600 text-white font-semibold">
@@ -47,7 +53,9 @@ const EmployerSidebar = ({ user }: { user: any }) => {
         <p className="text-xs font-semibold text-gray-500 mb-2">ACCOUNT</p>
         <SidebarItem icon={<CreditCard size={18} />} label="Plans & Billing" />
         <SidebarItem icon={<Globe2 size={18} />} label="All Companies" />
-        <SidebarItem icon={<Settings size={18} />} label="Settings" />
+        <Link href="/employer/settings">
+          <SidebarItem icon={<Settings size={18} />} label="Settings" />
+        </Link>
       </div>
 
       {/* Logout */}
@@ -62,10 +70,10 @@ const SidebarItem = ({ icon, label, active, danger }: any) => {
   return (
     <button
       className={`flex items-center space-x-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${active
-          ? "bg-gray-100 text-gray-900"
-          : danger
-            ? "text-red-600 hover:bg-red-50"
-            : "text-gray-700 hover:bg-gray-100"
+        ? "bg-gray-100 text-gray-900"
+        : danger
+          ? "text-red-600 hover:bg-red-50"
+          : "text-gray-700 hover:bg-gray-100"
         }`}
     >
       {icon}
