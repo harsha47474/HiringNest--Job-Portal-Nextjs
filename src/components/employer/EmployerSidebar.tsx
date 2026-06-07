@@ -39,11 +39,21 @@ const EmployerSidebar = ({
       {/* Workspace Section */}
       <div className="flex flex-col space-y-1 mb-6">
         <p className="text-xs font-semibold text-gray-500 mb-2">WORKSPACE</p>
-        <SidebarItem icon={<LayoutDashboard size={18} />} label="Overview" active />
-        <SidebarItem icon={<Building2 size={18} />} label="Employer Profile" />
-        <SidebarItem icon={<PlusCircle size={18} />} label="Post a Job" />
-        <SidebarItem icon={<Briefcase size={18} />} label="My Jobs" />
-        <SidebarItem icon={<Bookmark size={18} />} label="Saved Candidates" />
+        <Link href="/employer/dashboard">
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Overview" active />
+        </Link>
+        <Link href="/employer/profile">
+          <SidebarItem icon={<Building2 size={18} />} label="Employer Profile" />
+        </Link>
+        <Link href="/employer/jobs/post">
+          <SidebarItem icon={<PlusCircle size={18} />} label="Post a Job" />
+        </Link>
+        <Link href="/employer/jobs">
+          <SidebarItem icon={<Briefcase size={18} />} label="My Jobs" />
+        </Link>
+        <Link href="/employer/saved-candidates">
+          <SidebarItem icon={<Bookmark size={18} />} label="Saved Candidates" />
+        </Link>
       </div>
 
       <hr className="border-gray-200 mb-5" />
@@ -51,8 +61,12 @@ const EmployerSidebar = ({
       {/* Account Section */}
       <div className="flex flex-col space-y-1 mb-6">
         <p className="text-xs font-semibold text-gray-500 mb-2">ACCOUNT</p>
-        <SidebarItem icon={<CreditCard size={18} />} label="Plans & Billing" />
-        <SidebarItem icon={<Globe2 size={18} />} label="All Companies" />
+        <Link href="/employer/plans">
+          <SidebarItem icon={<CreditCard size={18} />} label="Plans & Billing" />
+        </Link>
+        <Link href="/employer/companies">
+          <SidebarItem icon={<Globe2 size={18} />} label="All Companies" />
+        </Link>
         <Link href="/employer/settings">
           <SidebarItem icon={<Settings size={18} />} label="Settings" />
         </Link>

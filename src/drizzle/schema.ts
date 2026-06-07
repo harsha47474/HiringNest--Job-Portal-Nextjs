@@ -2,73 +2,73 @@ import { relations } from 'drizzle-orm';
 import { int, mysqlTable, varchar, text, timestamp, mysqlEnum, date, year } from 'drizzle-orm/mysql-core'
 
 export const users = mysqlTable("users", {
-    id: int().autoincrement().primaryKey(),
-    name: varchar("name", { length: 255 }).notNull(),
-    userName: varchar("username", { length: 255 }).unique().notNull(),
-    role: mysqlEnum("role", ["admin", "applicant", "employee"]).default("applicant"),
-    password: text("password").notNull(),
-    email: varchar("email", { length: 255 }).notNull().unique(),
-    phoneNumber: varchar("phone_number", { length: 255 }),
-    deletedAt: timestamp("deleted_at"),
-    created_at: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  id: int().autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  userName: varchar("username", { length: 255 }).unique().notNull(),
+  role: mysqlEnum("role", ["admin", "applicant", "employee"]).default("applicant"),
+  password: text("password").notNull(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  phoneNumber: varchar("phone_number", { length: 255 }),
+  deletedAt: timestamp("deleted_at"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
 export const sessions = mysqlTable("sessions", {
-    id: varchar("id", { length: 255 }).primaryKey(),
-    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    userAgent: text("user_agent").notNull(),
-    ipAddress: varchar("ip_address", { length: 255 }).notNull(),
-    expiresAt: timestamp("expires_at").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userAgent: text("user_agent").notNull(),
+  ipAddress: varchar("ip_address", { length: 255 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 })
 
 export const employers = mysqlTable("employers", {
-    id: int("id")
-        .primaryKey()
-        .references(() => users.id, { onDelete: "cascade" }),
+  id: int("id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
 
-    name: varchar("name", { length: 255 }),
-    description: text("description"),
-    bannerImageUrl: text("banner_image_url"),
-    organizationType: varchar("organization_type", { length: 100 }),
-    teamSize: varchar("team_size", { length: 50 }),
-    yearOfEstablishment: year("year_of_establishment"), // MySQL YEAR type
-    websiteUrl: varchar("website_url", { length: 255 }),
-    location: varchar("location", { length: 255 }),
-    deletedAt: timestamp("deleted_at", { mode: "string" }),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
+  name: varchar("name", { length: 255 }),
+  description: text("description"),
+  bannerImageUrl: text("banner_image_url"),
+  organizationType: varchar("organization_type", { length: 100 }),
+  teamSize: varchar("team_size", { length: 50 }),
+  yearOfEstablishment: year("year_of_establishment"), // MySQL YEAR type
+  websiteUrl: varchar("website_url", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  deletedAt: timestamp("deleted_at", { mode: "string" }),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().onUpdateNow().notNull(),
 });
 
 export const applicants = mysqlTable("applicants", {
-    id: int("id")
-        .primaryKey()
-        .references(() => users.id, { onDelete: "cascade" }),
+  id: int("id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
 
-    biography: text("biography"),
-    dateOfBirth: date("date_of_birth"),
-    nationality: varchar("nationality", { length: 100 }),
+  biography: text("biography"),
+  dateOfBirth: date("date_of_birth"),
+  nationality: varchar("nationality", { length: 100 }),
 
-    maritalStatus: mysqlEnum("marital_status", ["single", "married", "divorced"]),
+  maritalStatus: mysqlEnum("marital_status", ["single", "married", "divorced"]),
 
-    gender: mysqlEnum("gender", ["male", "female", "other"]),
+  gender: mysqlEnum("gender", ["male", "female", "other"]),
 
-    education: mysqlEnum("education", [
-        "none",
-        "high school",
-        "undergraduate",
-        "masters",
-        "phd",
-    ]),
+  education: mysqlEnum("education", [
+    "none",
+    "high school",
+    "undergraduate",
+    "masters",
+    "phd",
+  ]),
 
-    experience: text("experience"),
-    websiteUrl: varchar("website_url", { length: 255 }),
-    location: varchar("location", { length: 255 }),
-    deletedAt: timestamp("deleted_at", { mode: "string" }),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
+  experience: text("experience"),
+  websiteUrl: varchar("website_url", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  deletedAt: timestamp("deleted_at", { mode: "string" }),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
 
 

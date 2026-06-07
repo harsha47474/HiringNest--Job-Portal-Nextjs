@@ -1,10 +1,12 @@
 import React from 'react'
 import EmployerSetting from '@/src/components/employer/EmployerSetting'
+import { getCurrentUser } from '@/src/helper/getCurrentUser'
+import { getEmployerProfileAction } from '@/src/lib/actions/settingsAction'
 
-const page = () => {
+const page = async () => {
   return (
     <div>
-        <EmployerSetting />
+        <EmployerSetting user={await getCurrentUser()} employer={await getEmployerProfileAction()} />
     </div>
   )
 }
