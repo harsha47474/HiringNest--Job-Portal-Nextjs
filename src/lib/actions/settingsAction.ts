@@ -4,6 +4,7 @@ import { db } from "@/src/config/db";
 import { users } from "@/src/drizzle/schema";
 import { employers } from "@/src/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { EmployerProfileInput } from "../validations/employerValidations";
 
 type BrandDetails = {
     name: string;
@@ -34,7 +35,7 @@ export const getEmployerProfileAction = async () => {
     return employer;
 }
 
-export const updateEmployerProfileAction = async (data: BrandDetails) => {
+export const updateEmployerProfileAction = async (data: EmployerProfileInput) => {
     try {
         const currentUser = await getCurrentUser();
 
@@ -48,7 +49,7 @@ export const updateEmployerProfileAction = async (data: BrandDetails) => {
             const employerData = {
                 name: data.name,
                 description: data.description,
-                organizationType: data.organisationType,
+                organizationType: data.organizationType,
                 teamSize: data.teamSize,
                 yearOfEstablishment: data.yearOfEstablishment,
                 websiteUrl: data.websiteUrl,
