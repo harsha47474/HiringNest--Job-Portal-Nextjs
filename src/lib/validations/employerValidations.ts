@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-export const employerProfileSchema = z.object({
+
+// TODO : Enum operator for organization type and teamSize for more safety
+  
+export const employerProfileSchema = z.object({ 
   name: z.string().min(4).max(255),
   description: z.string().min(20).max(255),
   bannerImageUrl: z.string().url().optional(),
