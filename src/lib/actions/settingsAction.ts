@@ -5,18 +5,8 @@ import { users } from "@/src/drizzle/schema";
 import { employers } from "@/src/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { EmployerProfileInput } from "../validations/employerValidations";
+import cloudinary from "@/src/utils/cloudinary"
 
-type BrandDetails = {
-    name: string;
-    websiteUrl: string;
-    organisationType: string;
-    teamSize: string;
-    yearOfEstablishment: number;
-    location: string;
-    description: string;
-    username: string;
-    email: string;
-}
 
 export const getEmployerProfileAction = async () => {
     const curentUser = await getCurrentUser();
@@ -50,6 +40,8 @@ export const updateEmployerProfileAction = async (data: EmployerProfileInput) =>
                 name: data.name,
                 description: data.description,
                 organizationType: data.organizationType,
+                bannerImageUrl: data.bannerImageUrl,
+                logoUrl: data.logoUrl,
                 teamSize: data.teamSize,
                 yearOfEstablishment: data.yearOfEstablishment,
                 websiteUrl: data.websiteUrl,
@@ -81,4 +73,26 @@ export const updateEmployerProfileAction = async (data: EmployerProfileInput) =>
         }
 
     }
+}
+
+export async function uploadBannerAction(file: File) {
+    const bytes = await file.arrayBuffer();
+
+    const buffer = Buffer.from(bytes);
+
+    const result = await new Promise<any>((resolve, reject) => {
+        cloudinary.uploader
+            .upload_stream(
+                {
+                    folder: "employer-banners",
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            )
+            .end(buffer);
+    });
+
+    return result.secure_url;
 }

@@ -10,6 +10,7 @@ import { updateEmployerProfileAction } from "@/src/lib/actions/settingsAction";
 import { employerProfileSchema } from "@/src/lib/validations/employerValidations";
 import { EmployerProfileInput } from "@/src/lib/validations/employerValidations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { uploadBannerAction } from "@/src/lib/actions/settingsAction";
 
 type AccountSettingsForm = {
     username: string;
@@ -17,7 +18,23 @@ type AccountSettingsForm = {
 }
 
 const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
+
+    // TODO: Create a Enhanced Text editor for the Company description using TipTap
     const [isEditing, setIsEditing] = useState(false);
+
+    const [bannerFile, setBannerFile] =
+        useState<File | null>(null);
+
+    const [bannerPreview, setBannerPreview] =
+        useState<string | null>(
+            employer?.bannerImageUrl ?? null
+        );
+
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+
+    const [logoPreview, setLogoPreview] = useState<string | null>(
+        employer?.logoUrl ?? null
+    );
 
     const [description, setDescription] = useState(
         employer?.description ?? ""
@@ -66,12 +83,24 @@ const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
     }, [editor, isEditing]);
 
     const onProfileSubmit = async (data: EmployerProfileInput) => {
-        const currentDescription = editor?.getHTML() ?? description;
+        let bannerImageUrl = employer?.bannerImageUrl ?? null;
+        let logoUrl = employer?.logoUrl ?? null;
+
+        if (bannerFile) {
+            bannerImageUrl = await uploadBannerAction(bannerFile);
+        }
+
+        if (logoFile) {
+            logoUrl = await uploadBannerAction(logoFile);
+        }
 
         const result = await updateEmployerProfileAction({
             ...data,
-            description: currentDescription,
+            bannerImageUrl,
+            logoUrl,
+            description: editor?.getHTML() ?? description,
         });
+
         if (result.success) {
             toast.success(result.message);
             setIsEditing(false);
@@ -138,38 +167,105 @@ const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
                         Brand identity
                     </h2>
 
-                    <div className="border border-dashed border-gray-300 rounded-lg h-40 flex items-center justify-center mb-4">
-                        <div className="text-center text-gray-500 text-sm">
-                            Recommended 1600 × 400px
+                    {/* Banner */}
+                    <div className="mb-6">
+                        <label className="text-xs font-medium text-gray-600 block mb-2">
+                            Company Banner
+                        </label>
+
+                        <div className="border border-dashed border-gray-300 rounded-lg h-48 overflow-hidden">
+                            {bannerPreview ? (
+                                <img
+                                    src={bannerPreview}
+                                    alt="Company banner"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+                                    Recommended 1600 × 400px
+                                </div>
+                            )}
                         </div>
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            id="banner-upload"
+                            disabled={!isEditing}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+
+                                if (!file) return;
+
+                                setBannerFile(file);
+                                setBannerPreview(URL.createObjectURL(file));
+                            }}
+                        />
+
+                        {isEditing && (
+                            <label
+                                htmlFor="banner-upload"
+                                className="mt-3 inline-flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 text-sm cursor-pointer"
+                            >
+                                <Upload size={16} />
+                                {bannerPreview ? "Replace banner" : "Upload banner"}
+                            </label>
+                        )}
                     </div>
 
-                    <button
-                        type="button"
-                        className="flex items-center space-x-2 border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50"
-                    >
-                        <Upload size={16} />
-                        <span>Upload</span>
-                    </button>
+                    {/* Logo */}
+                    <div>
+                        <label className="text-xs font-medium text-gray-600 block mb-2">
+                            Company Logo
+                        </label>
 
-                    <div className="flex items-center space-x-4 mt-6">
-                        <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-700">
-                            {user?.name ? user.name.charAt(0).toUpperCase() : "AC"}
-                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="w-24 h-24 rounded-xl border overflow-hidden bg-gray-50">
+                                {logoPreview ? (
+                                    <img
+                                        src={logoPreview}
+                                        alt="Company logo"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                                        Logo
+                                    </div>
+                                )}
+                            </div>
 
-                        <div>
-                            <p className="text-xs text-gray-500 mb-1">Profile picture</p>
+                            <div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    hidden
+                                    id="logo-upload"
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
 
-                            <button
-                                type="button"
-                                className="border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50"
-                            >
-                                Upload photo
-                            </button>
+                                        if (!file) return;
 
-                            <p className="text-xs text-gray-400 mt-1">
-                                PNG or JPG, up to 2MB.
-                            </p>
+                                        setLogoFile(file);
+                                        setLogoPreview(URL.createObjectURL(file));
+                                    }}
+                                />
+
+                                {isEditing && (
+                                    <label
+                                        htmlFor="logo-upload"
+                                        className="inline-flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 text-sm cursor-pointer"
+                                    >
+                                        <Upload size={16} />
+                                        {logoPreview ? "Replace logo" : "Upload logo"}
+                                    </label>
+                                )}
+
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Recommended 512 × 512px PNG
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
