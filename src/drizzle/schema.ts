@@ -1,6 +1,8 @@
 import { relations } from 'drizzle-orm';
-import { int, mysqlTable, varchar, text, timestamp, mysqlEnum, date, year } from 'drizzle-orm/mysql-core'
+import { int, mysqlTable, varchar, text, timestamp, mysqlEnum, date, year, boolean } from 'drizzle-orm/mysql-core'
 
+
+// users schema
 export const users = mysqlTable("users", {
   id: int().autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -14,6 +16,8 @@ export const users = mysqlTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+
+// sessions schema
 export const sessions = mysqlTable("sessions", {
   id: varchar("id", { length: 255 }).primaryKey(),
   userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -24,6 +28,8 @@ export const sessions = mysqlTable("sessions", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 })
 
+
+// employers schema
 export const employers = mysqlTable("employers", {
   id: int("id")
     .primaryKey()
@@ -43,6 +49,69 @@ export const employers = mysqlTable("employers", {
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().onUpdateNow().notNull(),
 });
 
+
+// jobs schema
+export const jobs = mysqlTable("jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  tags: text("tags"),
+  minSalary: int("min_salary"),
+  maxSalary: int("max_salary"),
+  salaryCurrency: mysqlEnum("salary_currency", [
+    "INR",
+    "USD",
+    "EUR",
+    "GBP",
+  ]),
+  salaryPeriod: mysqlEnum("salary_period", [
+    "hourly",
+    "monthly",
+    "yearly",
+  ]),
+  jobType: mysqlEnum("job_type", [
+    "full_time",
+    "part_time",
+    "contract",
+    "internship",
+    "freelance",
+  ]),
+  location: varchar("location", { length: 255 }),
+  workType: mysqlEnum("work_type", [
+    "remote",
+    "hybrid",
+    "onsite",
+  ]),
+  jobLevel: mysqlEnum("job_level", [
+    "entry",
+    "mid",
+    "senior",
+    "lead",
+    "manager",
+  ]),
+  experience: text("experience"),
+  minEducation: mysqlEnum("min_education", [
+    "high_school",
+    "diploma",
+    "bachelors",
+    "masters",
+    "phd",
+  ]),
+  isFeatured: boolean("is_featured").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  employerId: int("employer_id")
+    .notNull()
+    .references(() => employers.id, {
+      onDelete: "cascade",
+    }),
+  deletedAt: timestamp("deleted_at", { mode: "string" }),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+
+// applicant schema
 export const applicants = mysqlTable("applicants", {
   id: int("id")
     .primaryKey()
@@ -73,6 +142,8 @@ export const applicants = mysqlTable("applicants", {
 });
 
 
+
+// relationships
 export const usersRelations = relations(users, ({ one, many }) => ({
   // One user can have one employer profile (if role is employer)
   employer: one(employers, {
@@ -93,5 +164,13 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
     references: [users.id],
+  }),
+}));
+
+export const jobsRelations = relations(jobs, ({ one }) => ({
+  // Each job belongs to one employer
+  employer: one(employers, {
+    fields: [jobs.employerId],
+    references: [employers.id],
   }),
 }));

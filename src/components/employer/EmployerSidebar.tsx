@@ -42,8 +42,8 @@ const EmployerSidebar = ({ user, className = "" }: { user: any; className?: stri
         <Link href="/employer/profile">
           <SidebarItem icon={<Building2 size={18} />} label="Employer Profile" active={pathname === "/employer/profile"} />
         </Link>
-        <Link href="/employer/jobs/post">
-          <SidebarItem icon={<PlusCircle size={18} />} label="Post a Job" active={pathname === "/employer/jobs/post"} />
+        <Link href="/employer/post">
+          <SidebarItem icon={<PlusCircle size={18} />} label="Post a Job" active={pathname === "/employer/post"} />
         </Link>
         <Link href="/employer/jobs">
           <SidebarItem icon={<Briefcase size={18} />} label="My Jobs" active={pathname === "/employer/jobs"} />
@@ -81,10 +81,10 @@ const SidebarItem = ({ icon, label, active, danger }: any) => {
   return (
     <button
       className={`flex items-center space-x-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${active
-          ? "bg-gray-100 text-gray-900"
-          : danger
-            ? "text-red-600 hover:bg-red-50"
-            : "text-gray-700 hover:bg-gray-100"
+        ? "bg-gray-100 text-gray-900"
+        : danger
+          ? "text-red-600 hover:bg-red-50"
+          : "text-gray-700 hover:bg-gray-100"
         }`}
     >
       {icon}

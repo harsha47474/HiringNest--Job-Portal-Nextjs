@@ -6,18 +6,13 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner"
-import { updateEmployerProfileAction } from "@/src/lib/actions/settingsAction";
+import { updateEmployerProfileAction } from "@/src/lib/actions/employerProfileActions";
 import { employerProfileSchema } from "@/src/lib/validations/employerValidations";
 import { EmployerProfileInput } from "@/src/lib/validations/employerValidations";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { uploadBannerAction } from "@/src/lib/actions/settingsAction";
+import { uploadBannerAction } from "@/src/lib/actions/employerProfileActions";
 
-type AccountSettingsForm = {
-    username: string;
-    email: string;
-}
-
-const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
+const EmployerProfile = ({ user, employer }: { user: any; employer: any }) => {
 
     // TODO: Create a Enhanced Text editor for the Company description using TipTap
     const [isEditing, setIsEditing] = useState(false);
@@ -62,13 +57,6 @@ const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
         setValue("description", description);
     }, [description, setValue]);
 
-    const { register: accountRegister, handleSubmit: handleAccountSubmit } = useForm<AccountSettingsForm>({
-        defaultValues: {
-            username: user?.userName ?? "",
-            email: user?.email ?? "",
-        },
-    })
-
     const editor = useEditor({
         extensions: [StarterKit],
         content: employer?.description ?? "",
@@ -108,10 +96,6 @@ const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
             toast.error(result.message);
         }
     };
-
-    const onAccountSubmit = () => {
-
-    }
 
     return (
         <>
@@ -443,68 +427,8 @@ const SettingsPage = ({ user, employer }: { user: any; employer: any }) => {
                     </div>
                 </section>
             </form>
-            <form
-                onSubmit={handleAccountSubmit(onAccountSubmit)}
-                className="flex flex-col w-full bg-white p-6"
-            >
-                {/* Account */}
-                <section className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-                    <h2 className="text-sm font-semibold text-gray-900 mb-4">
-                        Account
-                    </h2>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs font-medium text-gray-600">
-                                Full name
-                            </label>
-
-                            <input
-                                type="text"
-                                disabled
-                                defaultValue={user?.name ?? ""}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 disabled:bg-gray-50 disabled:text-gray-500"
-                                {...accountRegister("username")}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-xs font-medium text-gray-600">
-                                Email
-                            </label>
-
-                            <input
-                                type="email"
-                                disabled
-                                defaultValue={user?.email ?? ""}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 disabled:bg-gray-50 disabled:text-gray-500"
-                                {...accountRegister("email")}
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Danger Zone */}
-                <section className="border border-red-200 bg-red-50 rounded-lg p-6">
-                    <h2 className="text-sm font-semibold text-red-700 mb-2">
-                        Danger zone
-                    </h2>
-
-                    <p className="text-xs text-red-600 mb-4">
-                        Delete company account — permanently remove your employer profile and
-                        all associated data.
-                    </p>
-
-                    <button
-                        type="button"
-                        className="bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-red-700"
-                    >
-                        Delete account
-                    </button>
-                </section>
-            </form>
         </>
     );
 };
 
-export default SettingsPage;
+export default EmployerProfile;
