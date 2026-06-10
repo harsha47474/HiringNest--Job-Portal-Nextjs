@@ -101,7 +101,7 @@ const EmployerProfile = ({ user, employer }: { user: any; employer: any }) => {
         <>
             <form
                 onSubmit={handleProfileSubmit(onProfileSubmit)}
-                className="flex flex-col w-full bg-white min-h-screen p-6"
+                className="flex flex-col w-full bg-white min-h-screen p-4"
             >
                 <input type="hidden" value={description} {...register("description")} />
                 {/* Header */}

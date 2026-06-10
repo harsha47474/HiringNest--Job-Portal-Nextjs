@@ -1,8 +1,11 @@
+import PostJobPage from '@/src/components/employer/PostAJobPage'
 import React from 'react'
 
 const page = () => {
   return (
-    <div>page</div>
+    <>
+      <PostJobPage />
+    </>
   )
 }
 
