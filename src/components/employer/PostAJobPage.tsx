@@ -1,7 +1,9 @@
 "use client";
 
+import { postAJobAction } from "@/src/lib/actions/jobActions";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type JobForm = {
     title: string;
@@ -33,8 +35,13 @@ const PostJobPage = () => {
 
     const { register, handleSubmit, formState: { errors } } = useForm<JobForm>();
 
-    const onSubmit = () => {
-
+    const onSubmit = async (data: JobForm) => {
+        const result = await postAJobAction(data)
+        if (result.success) {
+            toast.success(result.message);
+        } else {
+            toast.error(result.message);
+        }
     }
 
     return (
@@ -58,7 +65,9 @@ const PostJobPage = () => {
                                 <label className="text-sm font-medium text-gray-700">Job title</label>
                                 <input
                                     type="text"
+                                    required
                                     placeholder="e.g. Senior Product Designer"
+                                    {...register("title")}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
@@ -66,8 +75,10 @@ const PostJobPage = () => {
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Description</label>
                                 <textarea
+                                    required
                                     placeholder="Describe the role, responsibilities, and what success looks like..."
                                     rows={5}
+                                    {...register("description")}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
@@ -75,8 +86,10 @@ const PostJobPage = () => {
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Tags</label>
                                 <input
+                                    required
                                     type="text"
                                     placeholder="react, typescript, figma..."
+                                    {...register("tags")}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
@@ -95,6 +108,8 @@ const PostJobPage = () => {
                                 <label className="text-sm font-medium text-gray-700">Expires on</label>
                                 <input
                                     type="date"
+                                    {...register("expiresAt")}
+                                    required
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
@@ -107,6 +122,7 @@ const PostJobPage = () => {
                                 <input
                                     type="checkbox"
                                     checked={isFeatured}
+                                    {...register("isFeatured")}
                                     onChange={() => setIsFeatured(!isFeatured)}
                                     className="toggle toggle-sm accent-blue-600"
                                 />
@@ -120,6 +136,7 @@ const PostJobPage = () => {
                                 <input
                                     type="checkbox"
                                     checked={isActive}
+                                    {...register("isActive")}
                                     onChange={() => setIsActive(!isActive)}
                                     className="toggle toggle-sm accent-blue-600"
                                 />
@@ -148,7 +165,9 @@ const PostJobPage = () => {
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Classification</h2>
                         <div className="grid grid-cols-2 gap-4">
                             {/* Job Type */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                required
+                                {...register("jobType")}>
                                 <option value="full_time">Full Time</option>
                                 <option value="part_time">Part Time</option>
                                 <option value="contract">Contract</option>
@@ -157,14 +176,16 @@ const PostJobPage = () => {
                             </select>
 
                             {/* Work Type */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("workType")} required>
                                 <option value="remote">Remote</option>
                                 <option value="hybrid">Hybrid</option>
                                 <option value="onsite">Onsite</option>
                             </select>
 
                             {/* Job Level */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("jobLevel")} required>
                                 <option value="entry">Entry Level</option>
                                 <option value="mid">Mid Level</option>
                                 <option value="senior">Senior Level</option>
@@ -173,7 +194,8 @@ const PostJobPage = () => {
                             </select>
 
                             {/* Minimum Education */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("minEducation")} required>
                                 <option value="high_school">High School</option>
                                 <option value="diploma">Diploma</option>
                                 <option value="bachelors">Bachelor's Degree</option>
@@ -186,6 +208,8 @@ const PostJobPage = () => {
                                 type="text"
                                 placeholder="San Francisco, CA"
                                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("location")}
+                                required
                             />
 
                             {/* Experience */}
@@ -193,6 +217,8 @@ const PostJobPage = () => {
                                 type="text"
                                 placeholder="e.g. 3+ years in product design"
                                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("experience")}
+                                required
                             />
                         </div>
                     </section>
@@ -204,13 +230,19 @@ const PostJobPage = () => {
                                 type="number"
                                 placeholder="Minimum salary"
                                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("minSalary")}
+                                required
                             />
                             <input
                                 type="number"
                                 placeholder="Maximum salary"
                                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("maxSalary")}
+                                required
                             />
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("salaryCurrency")}
+                                required>
                                 <option value="USD">USD ($)</option>
                                 <option value="INR">INR (₹)</option>
                                 <option value="EUR">EUR (€)</option>
@@ -218,7 +250,8 @@ const PostJobPage = () => {
                             </select>
 
                             {/* Salary Period */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                                {...register("salaryPeriod")} required>
                                 <option value="yearly">Per Year</option>
                                 <option value="monthly">Per Month</option>
                                 <option value="hourly">Per Hour</option>
