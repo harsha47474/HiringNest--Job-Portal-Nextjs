@@ -6,46 +6,52 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { getCurrentLocation } from "@/src/helper/getCurrentLocation";
-
-type JobForm = {
-    title: string;
-    description: string;
-    tags: string[];
-
-    jobType: "full_time" | "part_time" | "contract" | "internship" | "freelance";
-    workType: "remote" | "hybrid" | "onsite";
-    jobLevel: "entry" | "mid" | "senior" | "lead" | "manager";
-    minEducation: "high_school" | "diploma" | "bachelors" | "masters" | "phd";
-
-    location: string;
-    latitude?: number;
-    longitude?: number;
-    experience: string;
-
-    minSalary: number;
-    maxSalary: number;
-
-    salaryCurrency: "USD" | "INR" | "EUR" | "GBP";
-    salaryPeriod: "yearly" | "monthly" | "hourly";
-
-    expiresAt: string;
-    isFeatured: boolean;
-};
+import { jobSchema } from "@/src/lib/validations/jobFormValidations";
+import { JobSchemaType } from "@/src/lib/validations/jobFormValidations";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const PostJobPage = () => {
     const [isFeatured, setIsFeatured] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [input, setInput] = useState("");
 
-    const { register, handleSubmit, formState: { errors }, setValue, watch, } = useForm<JobForm>({
+    const defaultExpiry = new Date();
+    defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+    const defaultExpiryString = defaultExpiry.toISOString().split("T")[0];
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        setValue,
+        watch,
+    } = useForm<JobSchemaType>({
+        resolver: zodResolver(jobSchema),
         defaultValues: {
+            title: "",
+            description: "",
             tags: [],
-        }
+            minSalary: 0,
+            maxSalary: 0,
+            salaryCurrency: "INR",
+            salaryPeriod: "monthly",
+            jobType: "full_time",
+            location: "",
+            latitude: undefined,
+            longitude: undefined,
+            workType: "onsite",
+            jobLevel: "entry",
+            experience: "",
+            minEducation: "bachelors",
+            isFeatured: false,
+            status: "draft",
+            expiresAt: defaultExpiryString,
+        },
     });
 
     const tags = watch("tags");
 
-    const onSubmit = async (data: JobForm) => {
+    const onSubmit = async (data: JobSchemaType) => {
         const result = await postAJobAction(data, "published")
         if (result.success) {
             toast.success(result.message);
@@ -127,22 +133,27 @@ const PostJobPage = () => {
                                     {...register("title")}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
+                                {errors.title && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>
+                                )}
                             </div>
 
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Description</label>
                                 <textarea
-                                    required
                                     placeholder="Describe the role, responsibilities, and what success looks like..."
                                     rows={5}
                                     {...register("description")}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
+                                {errors.description && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>
+                                )}
                             </div>
 
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Tags</label>
-                                <div className="border rounded-md p-2 flex flex-wrap gap-2">
+                                <div className="border border-gray-300 rounded-md p-2 flex flex-wrap gap-2 mt-1">
                                     {tags.map((tag) => (
                                         <span
                                             key={tag}
@@ -151,7 +162,7 @@ const PostJobPage = () => {
                                             {tag}
                                             <button
                                                 type="button"
-                                                className="cursor-pointer"
+                                                className="cursor-pointer font-bold text-xs"
                                                 onClick={() => { removeTag(tag) }}
                                             > x </button>
                                         </span>
@@ -164,7 +175,9 @@ const PostJobPage = () => {
                                         className="outline-none flex-1 min-w-[120px]"
                                     />
                                 </div>
-
+                                {errors.tags && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.tags.message}</p>
+                                )}
                                 <p className="text-xs text-gray-500 mt-1">
                                     Press Enter or comma to add.
                                 </p>
@@ -184,6 +197,9 @@ const PostJobPage = () => {
                                     {...register("expiresAt")}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
                                 />
+                                {errors.expiresAt && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.expiresAt.message}</p>
+                                )}
                             </div>
 
                             <div className="flex items-center justify-between border border-gray-200 rounded-md px-3 py-2">
@@ -207,10 +223,18 @@ const PostJobPage = () => {
                         </div>
 
                         <div className="flex justify-end space-x-3 mt-6">
-                            <button className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <button
+                                type="submit"
+                                onClick={() => setValue("status", "draft")}
+                                className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+                            >
                                 Save draft
                             </button>
-                            <button className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-blue-700">
+                            <button
+                                type="submit"
+                                onClick={() => setValue("status", "published")}
+                                className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-blue-700 cursor-pointer"
+                            >
                                 Publish job
                             </button>
                         </div>
@@ -223,108 +247,173 @@ const PostJobPage = () => {
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Classification</h2>
                         <div className="grid grid-cols-2 gap-4">
                             {/* Job Type */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("jobType")}>
-                                <option value="full_time">Full Time</option>
-                                <option value="part_time">Part Time</option>
-                                <option value="contract">Contract</option>
-                                <option value="internship">Internship</option>
-                                <option value="freelance">Freelance</option>
-                            </select>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Job Type</label>
+                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("jobType")}>
+                                    <option value="full_time">Full Time</option>
+                                    <option value="part_time">Part Time</option>
+                                    <option value="contract">Contract</option>
+                                    <option value="internship">Internship</option>
+                                    <option value="freelance">Freelance</option>
+                                </select>
+                                {errors.jobType && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.jobType.message}</p>
+                                )}
+                            </div>
 
                             {/* Work Type */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("workType")} >
-                                <option value="remote">Remote</option>
-                                <option value="hybrid">Hybrid</option>
-                                <option value="onsite">Onsite</option>
-                            </select>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Work Type</label>
+                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("workType")} >
+                                    <option value="remote">Remote</option>
+                                    <option value="hybrid">Hybrid</option>
+                                    <option value="onsite">Onsite</option>
+                                </select>
+                                {errors.workType && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.workType.message}</p>
+                                )}
+                            </div>
 
                             {/* Job Level */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("jobLevel")} >
-                                <option value="entry">Entry Level</option>
-                                <option value="mid">Mid Level</option>
-                                <option value="senior">Senior Level</option>
-                                <option value="lead">Lead</option>
-                                <option value="manager">Manager</option>
-                            </select>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Job Level</label>
+                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("jobLevel")} >
+                                    <option value="entry">Entry Level</option>
+                                    <option value="mid">Mid Level</option>
+                                    <option value="senior">Senior Level</option>
+                                    <option value="lead">Lead</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                                {errors.jobLevel && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.jobLevel.message}</p>
+                                )}
+                            </div>
 
                             {/* Minimum Education */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("minEducation")} >
-                                <option value="high_school">High School</option>
-                                <option value="diploma">Diploma</option>
-                                <option value="bachelors">Bachelor's Degree</option>
-                                <option value="masters">Master's Degree</option>
-                                <option value="phd">PhD</option>
-                            </select>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Minimum Education</label>
+                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("minEducation")} >
+                                    <option value="high_school">High School</option>
+                                    <option value="diploma">Diploma</option>
+                                    <option value="bachelors">Bachelor's Degree</option>
+                                    <option value="masters">Master's Degree</option>
+                                    <option value="phd">PhD</option>
+                                </select>
+                                {errors.minEducation && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.minEducation.message}</p>
+                                )}
+                            </div>
 
                             {/* Location */}
-                            <input
-                                type="text"
-                                placeholder="San Francisco, CA"
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("location")}
-                            />
-
-                            <Button
-                                type="button"
-                                disabled={isLoading}
-                                onClick={() => {
-                                    setIsLoading(true)
-                                    getLocation()
-                                }}
-                                variant="blue"
-                                className="text-white"
-                            >
-                                📍 {isLoading ? "Detecting..." : "Use Current"}
-                            </Button>
+                            <div className="flex flex-col gap-1 col-span-2">
+                                <label className="text-sm font-medium text-gray-700">Location</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="San Francisco, CA"
+                                        className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-grow"
+                                        {...register("location")}
+                                    />
+                                    <Button
+                                        type="button"
+                                        disabled={isLoading}
+                                        onClick={() => {
+                                            setIsLoading(true)
+                                            getLocation()
+                                        }}
+                                        variant="blue"
+                                        className="text-white shrink-0 cursor-pointer"
+                                    >
+                                        📍 {isLoading ? "Detecting..." : "Use Current"}
+                                    </Button>
+                                </div>
+                                {errors.location && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.location.message}</p>
+                                )}
+                                {errors.latitude && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.latitude.message}</p>
+                                )}
+                                {errors.longitude && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.longitude.message}</p>
+                                )}
+                            </div>
 
                             {/* Experience */}
-                            <input
-                                type="text"
-                                placeholder="e.g. 3+ years in product design"
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("experience")}
-
-                            />
+                            <div className="flex flex-col gap-1 col-span-2">
+                                <label className="text-sm font-medium text-gray-700">Experience</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. 3+ years in product design"
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("experience")}
+                                />
+                                {errors.experience && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.experience.message}</p>
+                                )}
+                            </div>
                         </div>
                     </section>
 
                     <section className="bg-white border border-gray-200 rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Compensation</h2>
                         <div className="grid grid-cols-2 gap-4">
-                            <input
-                                type="number"
-                                placeholder="Minimum salary"
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("minSalary")}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Minimum Salary</label>
+                                <input
+                                    type="number"
+                                    placeholder="Minimum salary"
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("minSalary", { valueAsNumber: true })}
+                                />
+                                {errors.minSalary && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.minSalary.message}</p>
+                                )}
+                            </div>
 
-                            />
-                            <input
-                                type="number"
-                                placeholder="Maximum salary"
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("maxSalary")}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Maximum Salary</label>
+                                <input
+                                    type="number"
+                                    placeholder="Maximum salary"
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("maxSalary", { valueAsNumber: true })}
+                                />
+                                {errors.maxSalary && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.maxSalary.message}</p>
+                                )}
+                            </div>
 
-                            />
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("salaryCurrency")}
-                            >
-                                <option value="USD">USD ($)</option>
-                                <option value="INR">INR (₹)</option>
-                                <option value="EUR">EUR (€)</option>
-                                <option value="GBP">GBP (£)</option>
-                            </select>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Currency</label>
+                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("salaryCurrency")}
+                                >
+                                    <option value="USD">USD ($)</option>
+                                    <option value="INR">INR (₹)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                </select>
+                                {errors.salaryCurrency && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.salaryCurrency.message}</p>
+                                )}
+                            </div>
 
-                            {/* Salary Period */}
-                            <select className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                {...register("salaryPeriod")} >
-                                <option value="yearly">Per Year</option>
-                                <option value="monthly">Per Month</option>
-                                <option value="hourly">Per Hour</option>
-                            </select>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Salary Period</label>
+                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("salaryPeriod")} >
+                                    <option value="yearly">Per Year</option>
+                                    <option value="monthly">Per Month</option>
+                                    <option value="hourly">Per Hour</option>
+                                </select>
+                                {errors.salaryPeriod && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.salaryPeriod.message}</p>
+                                )}
+                            </div>
                         </div>
                     </section>
                 </div >

@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/src/helper/getCurrentUser";
 import { getCurrentEmployerDetails } from "@/src/helper/getCurrentEmployerDetails";
 import { log } from "node:console";
+import { JobSchemaType } from "../validations/jobFormValidations";
 
 type JobForm = {
     title: string;
@@ -32,7 +33,7 @@ type JobForm = {
     isFeatured: boolean;
 };
 
-export const postAJobAction = async (data: JobForm, status: "draft" | "published" | "expired" | "closed") => {
+export const postAJobAction = async (data: JobSchemaType, status: "draft" | "published" | "expired" | "closed") => {
     try {
         const currentUser = await getCurrentEmployerDetails();
 
