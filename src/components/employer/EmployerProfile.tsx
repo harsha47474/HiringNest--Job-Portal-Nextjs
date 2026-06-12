@@ -11,6 +11,7 @@ import { employerProfileSchema } from "@/src/lib/validations/employerValidations
 import { EmployerProfileInput } from "@/src/lib/validations/employerValidations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { uploadBannerAction } from "@/src/lib/actions/employerProfileActions";
+import { Button } from "../ui/button";
 
 const EmployerProfile = ({ user, employer }: { user: any; employer: any }) => {
 
@@ -115,13 +116,14 @@ const EmployerProfile = ({ user, employer }: { user: any; employer: any }) => {
 
                     <div className="flex gap-2">
                         {!isEditing ? (
-                            <button
+                            <Button
                                 type="button"
                                 onClick={() => setIsEditing(true)}
-                                className="border border-gray-300 px-4 py-2 rounded-md text-sm cursor-pointer"
+                                className="border border-gray-300 px-4 py-2 rounded-md text-sm cursor-pointer text-white"
+                                variant={"blue"}
                             >
                                 Edit
-                            </button>
+                            </Button>
                         ) : (
                             <>
                                 <button
@@ -132,14 +134,15 @@ const EmployerProfile = ({ user, employer }: { user: any; employer: any }) => {
                                     Cancel
                                 </button>
 
-                                <button
+                                <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex items-center space-x-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+                                    variant={"blue"}
+                                    className="flex items-center space-x-2 text-white text-sm font-medium px-4 h-10 rounded-md hover:bg-blue-700 cursor-pointer"
                                 >
                                     <Save size={16} />
                                     <span>{isSubmitting ? "Saving..." : "Save changes"}</span>
-                                </button>
+                                </Button>
                             </>
                         )}
                     </div>

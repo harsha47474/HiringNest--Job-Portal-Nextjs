@@ -36,6 +36,20 @@
       "when": 1781093398828,
       "tag": "0004_yielding_loki",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1781240086463,
+      "tag": "0005_perpetual_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1781255130154,
+      "tag": "0006_certain_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

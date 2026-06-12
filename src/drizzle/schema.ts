@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { int, mysqlTable, varchar, text, timestamp, mysqlEnum, date, year, boolean } from 'drizzle-orm/mysql-core'
+import { int, mysqlTable, varchar, text, timestamp, mysqlEnum, date, year, boolean, decimal } from 'drizzle-orm/mysql-core'
 
 
 // users schema
@@ -77,6 +77,15 @@ export const jobs = mysqlTable("jobs", {
     "freelance",
   ]),
   location: varchar("location", { length: 255 }),
+  latitude: decimal("latitude", {
+    precision: 10,
+    scale: 8,
+  }),
+
+  longitude: decimal("longitude", {
+    precision: 11,
+    scale: 8,
+  }),
   workType: mysqlEnum("work_type", [
     "remote",
     "hybrid",
@@ -98,7 +107,7 @@ export const jobs = mysqlTable("jobs", {
     "phd",
   ]),
   isFeatured: boolean("is_featured").default(false).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
+  status: mysqlEnum("status", ["draft", "published", "expired", "closed"]),
   employerId: int("employer_id")
     .notNull()
     .references(() => employers.id, {

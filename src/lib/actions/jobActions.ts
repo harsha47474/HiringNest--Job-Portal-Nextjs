@@ -10,7 +10,7 @@ import { log } from "node:console";
 type JobForm = {
     title: string;
     description: string;
-    tags: string;
+    tags: string[];
 
     jobType: "full_time" | "part_time" | "contract" | "internship" | "freelance";
     workType: "remote" | "hybrid" | "onsite";
@@ -18,6 +18,8 @@ type JobForm = {
     minEducation: "high_school" | "diploma" | "bachelors" | "masters" | "phd";
 
     location: string;
+    latitude?: number;
+    longitude?: number;
     experience: string;
 
     minSalary: number;
@@ -28,10 +30,9 @@ type JobForm = {
 
     expiresAt: string;
     isFeatured: boolean;
-    isActive: boolean;
 };
 
-export const postAJobAction = async (data: JobForm) => {
+export const postAJobAction = async (data: JobForm, status: "draft" | "published" | "expired" | "closed") => {
     try {
         const currentUser = await getCurrentEmployerDetails();
 
@@ -43,25 +44,33 @@ export const postAJobAction = async (data: JobForm) => {
             const JobData = {
                 title: data.title,
                 description: data.description,
-                tags: data.tags,
+                tags: JSON.stringify(data.tags),
                 minSalary: data.minSalary,
                 maxSalary: data.maxSalary,
                 salaryCurrency: data.salaryCurrency,
                 salaryPeriod: data.salaryPeriod,
                 jobType: data.jobType,
                 location: data.location,
+                latitude:
+                    data.latitude != null
+                        ? String(data.latitude)
+                        : null,
+
+                longitude:
+                    data.longitude != null
+                        ? String(data.longitude)
+                        : null,
                 workType: data.workType,
                 jobLevel: data.jobLevel,
                 experience: data.experience,
                 minEducation: data.minEducation,
                 isFeatured: data.isFeatured,
-                isActive: data.isActive,
                 expiresAt: new Date(data.expiresAt),
             }
-
             await tx.insert(jobs).values({
                 employerId: currentUser.id,
                 ...JobData,
+                status,
             })
         });
         return { success: true, message: "Job Posted Successfully" };
