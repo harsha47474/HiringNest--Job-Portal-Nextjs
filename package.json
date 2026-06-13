@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "db:generate": "drizzle-kit generate",
+    "seed":"tsx src/config/seed/seed.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "build": "next build",

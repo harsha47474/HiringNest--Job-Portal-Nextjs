@@ -25,6 +25,7 @@ const PostJobPage = () => {
         formState: { errors },
         setValue,
         watch,
+        reset,
     } = useForm<JobSchemaType>({
         resolver: zodResolver(jobSchema),
         defaultValues: {
@@ -58,6 +59,7 @@ const PostJobPage = () => {
         } else {
             toast.error(result.message);
         }
+        reset();
     }
 
 

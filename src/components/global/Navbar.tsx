@@ -1,8 +1,11 @@
 import React from "react";
 import { Bell, Search } from "lucide-react";
 import Link from "next/link";
+import { getCurrentEmployerDetails } from "@/src/helper/getCurrentEmployerDetails";
 
-const Navbar = ({ user }: { user: any }) => {
+const Navbar = async ({ user }: { user: any }) => {
+    const employer = await getCurrentEmployerDetails();
+
     return (
         <nav className="flex items-center justify-between bg-white border-b border-gray-200 px-6 py-3">
             {/* Search bar */}

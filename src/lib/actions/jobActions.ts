@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/src/helper/getCurrentUser";
 import { getCurrentEmployerDetails } from "@/src/helper/getCurrentEmployerDetails";
 import { log } from "node:console";
 import { JobSchemaType } from "../validations/jobFormValidations";
+import { success } from "zod";
 
 type JobForm = {
     title: string;
@@ -84,5 +85,99 @@ export const postAJobAction = async (data: JobSchemaType, status: "draft" | "pub
             message: "Failed to post the job",
         }
 
+    }
+}
+
+
+export type Job = typeof jobs.$inferSelect;
+
+export const getMyJobs = async () => {
+    try {
+        const employerDetails = await getCurrentEmployerDetails();
+        const employerId = employerDetails?.id;
+        if (!employerId) {
+            return { success: false, message: "User not authenticated" };
+        }
+
+        const myJobs = await db.select().from(jobs).where(eq(jobs.employerId, employerId));
+        console.log(myJobs);
+        
+        return {
+            success: true,
+            myJobs: myJobs ?? [],
+        };
+    } catch (error) {
+        console.error(error);
+
+        return {
+            success: false,
+            message: "Failed to retrieve jobs",
+        };
+    }
+}
+
+export const updateJobAction = async (id: number, data: Partial<Job>) => {
+    try {
+        const employerDetails = await getCurrentEmployerDetails();
+        const employerId = employerDetails?.id;
+        if (!employerId) {
+            return { success: false, message: "User not authenticated" };
+        }
+
+        const [existingJob] = await db.select().from(jobs).where(eq(jobs.id, id));
+        if (!existingJob || existingJob.employerId !== employerId) {
+            return { success: false, message: "Unauthorized or job not found" };
+        }
+
+        // Exclude fields that are read-only
+        const { id: _, employerId: __, createdAt: ___, updatedAt: ____, ...updateData } = data;
+
+        await db.update(jobs).set(updateData).where(eq(jobs.id, id));
+        return { success: true, message: "Job updated successfully" };
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: "Failed to update job" };
+    }
+}
+
+export const deleteJobAction = async (id: number) => {
+    try {
+        const employerDetails = await getCurrentEmployerDetails();
+        const employerId = employerDetails?.id;
+        if (!employerId) {
+            return { success: false, message: "User not authenticated" };
+        }
+
+        const [existingJob] = await db.select().from(jobs).where(eq(jobs.id, id));
+        if (!existingJob || existingJob.employerId !== employerId) {
+            return { success: false, message: "Unauthorized or job not found" };
+        }
+
+        await db.delete(jobs).where(eq(jobs.id, id));
+        return { success: true, message: "Job deleted successfully" };
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: "Failed to delete job" };
+    }
+}
+
+export const updateJobStatusAction = async (id: number, status: "draft" | "published" | "expired" | "closed") => {
+    try {
+        const employerDetails = await getCurrentEmployerDetails();
+        const employerId = employerDetails?.id;
+        if (!employerId) {
+            return { success: false, message: "User not authenticated" };
+        }
+
+        const [existingJob] = await db.select().from(jobs).where(eq(jobs.id, id));
+        if (!existingJob || existingJob.employerId !== employerId) {
+            return { success: false, message: "Unauthorized or job not found" };
+        }
+
+        await db.update(jobs).set({ status }).where(eq(jobs.id, id));
+        return { success: true, message: `Job marked as ${status} successfully` };
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: "Failed to update job status" };
     }
 }
