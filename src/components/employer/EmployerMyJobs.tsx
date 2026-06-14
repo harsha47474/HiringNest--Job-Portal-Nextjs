@@ -29,8 +29,8 @@ const EmployerMyJobs = () => {
   }, []);
 
   return (
-    <div className="flex flex-col w-full min-h-screen p-6 bg-gray-50">
-      <div className="mb-6">
+    <div className="flex flex-col w-full min-h-screen p-4">
+      <div className="mb-5">
         <h1 className="text-3xl font-semibold text-gray-900">My Jobs</h1>
         <p className="text-sm text-gray-600">
           Manage and track every job you've posted.
