@@ -50,6 +50,7 @@ export const createUserSessionAndSetCookie = async (userId: number, tx: DBClient
         secure: true,
         httpOnly: true,
         maxAge: SESSION_LIFETIME,
+        sameSite: "lax",
     });
 };
 

@@ -89,7 +89,7 @@ export const postAJobAction = async (data: JobSchemaType, status: "draft" | "pub
 }
 
 
-export type Job = typeof jobs.$inferSelect;
+export type MyJobType = typeof jobs.$inferSelect;
 
 export const getMyJobs = async () => {
     try {
@@ -101,7 +101,7 @@ export const getMyJobs = async () => {
 
         const myJobs = await db.select().from(jobs).where(eq(jobs.employerId, employerId));
         console.log(myJobs);
-        
+
         return {
             success: true,
             myJobs: myJobs ?? [],
@@ -116,7 +116,24 @@ export const getMyJobs = async () => {
     }
 }
 
-export const updateJobAction = async (id: number, data: Partial<Job>) => {
+export const getJobById = async (id: number): Promise<MyJobType | null> => {
+    try {
+        if (!id && id !== 0) {
+            throw new Error("Enter a valid job id");
+        }
+
+        console.log("getJobById: fetching id=", id);
+        const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+        console.log("getJobById: db result length=", result.length);
+
+        return result.length > 0 ? result[0] : null;
+    } catch (error) {
+        console.error("Error fetching job by id:", error);
+        return null;
+    }
+};
+
+export const updateJobAction = async (id: number, data: Partial<MyJobType>) => {
     try {
         const employerDetails = await getCurrentEmployerDetails();
         const employerId = employerDetails?.id;

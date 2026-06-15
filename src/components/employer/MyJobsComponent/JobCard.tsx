@@ -1,5 +1,4 @@
 import JobDetailsModal from "./JobDetailsModal";
-import EditJobModal from "./EditJobModal";
 import JobActionsMenu from "./JobActionsMenu";
 import {
     MapPin,
@@ -8,8 +7,17 @@ import {
     Clock,
     Users
 } from "lucide-react";
+import Link from "next/link";
 
-export default function JobCard({ job }: { job: any }) {
+interface JobCardProps {
+    job: any;
+    onDuplicate?: (job: any) => void;
+    onClose?: (jobId: number) => void;
+    onDelete?: (jobId: number) => void;
+    onPublish?: (jobId: number) => void;
+}
+
+export default function JobCard({ job, onDuplicate, onClose, onDelete, onPublish }: JobCardProps) {
     let status;
     let currency;
     if (job.status === "published") {
@@ -20,7 +28,7 @@ export default function JobCard({ job }: { job: any }) {
 
     if (job.salaryCurrency === "INR") {
         currency = "₹"
-    } else if (job.salarCurrency === "USD") {
+    } else if (job.salaryCurrency === "USD") {
         currency = "$"
     } else if (job.salaryCurrency === "EUR") {
         currency = "€"
@@ -104,7 +112,7 @@ export default function JobCard({ job }: { job: any }) {
                     <div className="flex items-center gap-4 text-xs text-gray-400">
                         <div className="flex items-center gap-1.5">
                             <Users size={13} className="text-gray-400" />
-                            <span>{job.applicants} applicants</span>
+                            <span>{job.applicants || 0} applicants</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Clock size={13} className="text-gray-400" />
@@ -120,8 +128,20 @@ export default function JobCard({ job }: { job: any }) {
 
             <div className="flex items-center gap-2">
                 <JobDetailsModal job={job} />
-                <EditJobModal job={job} />
-                <JobActionsMenu />
+                <Link href={`jobs/${job.id}/edit`}>
+                    <button
+                        className="px-3 py-1 border rounded-md text-sm hover:bg-gray-50 cursor-pointer"
+                    >
+                        Edit
+                    </button></Link>
+
+                <JobActionsMenu 
+                    job={job} 
+                    onDuplicate={onDuplicate}
+                    onClose={onClose}
+                    onDelete={onDelete}
+                    onPublish={onPublish}
+                />
             </div>
         </div>
     );

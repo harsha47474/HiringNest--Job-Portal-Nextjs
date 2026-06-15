@@ -1,23 +1,26 @@
 "use client";
 
-import { postAJobAction } from "@/src/lib/actions/jobActions";
-import React, { useState } from "react";
+import { getJobById, updateJobAction, MyJobType } from "@/src/lib/actions/jobActions";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { getCurrentLocation } from "@/src/helper/getCurrentLocation";
-import { jobSchema } from "@/src/lib/validations/jobFormValidations";
-import { JobSchemaType } from "@/src/lib/validations/jobFormValidations";
+import { jobSchema, JobSchemaType } from "@/src/lib/validations/jobFormValidations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
-const PostJobPage = () => {
-    const [isFeatured, setIsFeatured] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+type EditJobPageProps = {
+    jobId: number;
+};
+
+export default function EditJobPage({ jobId }: EditJobPageProps) {
+    const [job, setJob] = useState<MyJobType | null>(null);
+    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [input, setInput] = useState("");
-
-    const defaultExpiry = new Date();
-    defaultExpiry.setDate(defaultExpiry.getDate() + 30);
-    const defaultExpiryString = defaultExpiry.toISOString().split("T")[0];
+    const [isFeatured, setIsFeatured] = useState(false);
+    const router = useRouter();
 
     const {
         register,
@@ -46,62 +49,128 @@ const PostJobPage = () => {
             minEducation: "bachelors",
             isFeatured: false,
             status: "draft",
-            expiresAt: defaultExpiryString,
+            expiresAt: "",
         },
     });
 
     const tags = watch("tags");
 
-    const onSubmit = async (data: JobSchemaType) => {
-        setIsLoading(true);
-        const result = await postAJobAction(data, data.status as "draft" | "published" | "expired" | "closed");
-        if (result.success) {
-            toast.success(result.message);
-            // Optionally redirect after success
-        } else {
-            toast.error(result.message);
-        }
-        setIsLoading(false);
-        if (result.success) reset();
-    }
+    useEffect(() => {
+        const fetchJob = async () => {
+            const res = await getJobById(jobId);
+            if (res) {
+                setJob(res);
 
+                // Parse tags from JSON string to array
+                const parsedTags = res.tags ? JSON.parse(res.tags as string) : [];
+
+                // Convert coordinates from string to number
+                const latitude = res.latitude ? parseFloat(res.latitude) : undefined;
+                const longitude = res.longitude ? parseFloat(res.longitude) : undefined;
+
+                // Convert expiresAt Date to string format for date input
+                const expiresAt = res.expiresAt 
+                    ? new Date(res.expiresAt).toISOString().split("T")[0] 
+                    : "";
+
+                setIsFeatured(res.isFeatured || false);
+
+                reset({
+                    title: res.title || "",
+                    description: res.description || "",
+                    tags: parsedTags,
+                    minSalary: res.minSalary || 0,
+                    maxSalary: res.maxSalary || 0,
+                    salaryCurrency: res.salaryCurrency || "INR",
+                    salaryPeriod: res.salaryPeriod || "monthly",
+                    jobType: res.jobType || "full_time",
+                    location: res.location || "",
+                    latitude: latitude,
+                    longitude: longitude,
+                    workType: res.workType || "onsite",
+                    jobLevel: res.jobLevel || "entry",
+                    experience: res.experience || "",
+                    minEducation: res.minEducation || "bachelors",
+                    isFeatured: res.isFeatured || false,
+                    status: res.status || "draft",
+                    expiresAt: expiresAt,
+                });
+            } else {
+                console.warn("No job found for id:", jobId);
+                toast.error("Job not found");
+            }
+        };
+        fetchJob();
+    }, [jobId, reset]);
+
+    const onSubmit = async (data: JobSchemaType) => {
+        setIsSubmitting(true);
+        try {
+            const result = await updateJobAction(jobId, {
+                title: data.title,
+                description: data.description,
+                tags: JSON.stringify(data.tags),
+                minSalary: data.minSalary,
+                maxSalary: data.maxSalary,
+                salaryCurrency: data.salaryCurrency,
+                salaryPeriod: data.salaryPeriod,
+                jobType: data.jobType,
+                location: data.location,
+                latitude: data.latitude?.toString() || null,
+                longitude: data.longitude?.toString() || null,
+                workType: data.workType,
+                jobLevel: data.jobLevel,
+                experience: data.experience,
+                minEducation: data.minEducation,
+                isFeatured: data.isFeatured,
+                status: data.status,
+                expiresAt: new Date(data.expiresAt),
+            });
+
+            if (result.success) {
+                toast.success(result.message);
+                router.push("/employer/jobs");
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            console.error("Error updating job:", error);
+            toast.error("Failed to update job");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const addTag = () => {
-        const value = input.trim()
-
-        if (!value) return
-
+        const value = input.trim();
+        if (!value) return;
         if (!tags.includes(value)) {
-            setValue("tags", [...tags, value])
+            setValue("tags", [...tags, value]);
         }
-
         setInput("");
-    }
+    };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" || e.key === ",") {
             e.preventDefault();
             addTag();
         }
-    }
+    };
 
     const removeTag = (tag: string) => {
         setValue(
             "tags",
             tags.filter((t) => t !== tag)
-        )
-    }
+        );
+    };
 
-    // get current location of user from the browser
     const getLocation = async () => {
         try {
             const response = await getCurrentLocation();
-
             if (response.status === "Success") {
                 setValue("location", response.formattedLocation!);
                 setValue("latitude", response.latitude!);
                 setValue("longitude", response.longitude!);
-
                 toast.success(response.message);
             } else {
                 toast.error(response.message);
@@ -109,17 +178,19 @@ const PostJobPage = () => {
         } catch {
             toast.error("Failed to fetch location");
         } finally {
-            setIsLoading(false)
+            setIsLoadingLocation(false);
         }
     };
+
+    if (!job) return <p className="p-6">Loading...</p>;
 
     return (
         <div className="flex flex-col w-full min-h-screen p-4">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-semibold text-gray-900">Post a Job</h1>
+                <h1 className="text-3xl font-semibold text-gray-900">Edit Job</h1>
                 <p className="text-sm text-gray-600">
-                    Create a new job listing. It takes about 3 minutes.
+                    Update the details of your job listing.
                 </p>
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -168,8 +239,10 @@ const PostJobPage = () => {
                                             <button
                                                 type="button"
                                                 className="cursor-pointer font-bold text-xs"
-                                                onClick={() => { removeTag(tag) }}
-                                            > x </button>
+                                                onClick={() => removeTag(tag)}
+                                            >
+                                                x
+                                            </button>
                                         </span>
                                     ))}
                                     <input
@@ -188,13 +261,28 @@ const PostJobPage = () => {
                                 </p>
                             </div>
                         </div>
-                    </section >
+                    </section>
 
                     {/* Right: Publishing */}
-                    < section className="bg-white border border-gray-200 rounded-lg p-6" >
+                    <section className="bg-white border border-gray-200 rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Publishing</h2>
 
                         <div className="space-y-4">
+                            <div>
+                                <label className="text-sm font-medium text-gray-700">Status</label>
+                                <select
+                                    {...register("status")}
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
+                                >
+                                    <option value="draft">Draft</option>
+                                    <option value="published">Published</option>
+                                    <option value="closed">Closed</option>
+                                </select>
+                                {errors.status && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.status.message}</p>
+                                )}
+                            </div>
+
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Expires on</label>
                                 <input
@@ -229,35 +317,35 @@ const PostJobPage = () => {
 
                         <div className="flex justify-end space-x-3 mt-6">
                             <button
-                                type="submit"
-                                onClick={() => setValue("status", "draft", { shouldValidate: true })}
-                                disabled={isLoading}
-                                className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+                                type="button"
+                                onClick={() => router.push("/employer/jobs")}
+                                className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                             >
-                                Save draft
+                                Cancel
                             </button>
                             <button
                                 type="submit"
-                                onClick={() => setValue("status", "published", { shouldValidate: true })}
-                                disabled={isLoading}
-                                className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50"
+                                disabled={isSubmitting}
+                                className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isLoading ? "Processing..." : "Publish job"}
+                                {isSubmitting ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
-                    </section >
-                </div >
+                    </section>
+                </div>
 
                 {/* Classification & Compensation */}
-                < div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6" >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                     <section className="bg-white border border-gray-200 rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Classification</h2>
                         <div className="grid grid-cols-2 gap-4">
                             {/* Job Type */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">Job Type</label>
-                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
-                                    {...register("jobType")}>
+                                <select
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("jobType")}
+                                >
                                     <option value="full_time">Full Time</option>
                                     <option value="part_time">Part Time</option>
                                     <option value="contract">Contract</option>
@@ -272,8 +360,10 @@ const PostJobPage = () => {
                             {/* Work Type */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">Work Type</label>
-                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
-                                    {...register("workType")} >
+                                <select
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("workType")}
+                                >
                                     <option value="remote">Remote</option>
                                     <option value="hybrid">Hybrid</option>
                                     <option value="onsite">Onsite</option>
@@ -286,8 +376,10 @@ const PostJobPage = () => {
                             {/* Job Level */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">Job Level</label>
-                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
-                                    {...register("jobLevel")} >
+                                <select
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("jobLevel")}
+                                >
                                     <option value="entry">Entry Level</option>
                                     <option value="mid">Mid Level</option>
                                     <option value="senior">Senior Level</option>
@@ -302,8 +394,10 @@ const PostJobPage = () => {
                             {/* Minimum Education */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">Minimum Education</label>
-                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
-                                    {...register("minEducation")} >
+                                <select
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("minEducation")}
+                                >
                                     <option value="high_school">High School</option>
                                     <option value="diploma">Diploma</option>
                                     <option value="bachelors">Bachelor's Degree</option>
@@ -327,15 +421,15 @@ const PostJobPage = () => {
                                     />
                                     <Button
                                         type="button"
-                                        disabled={isLoading}
+                                        disabled={isLoadingLocation}
                                         onClick={() => {
-                                            setIsLoading(true)
-                                            getLocation()
+                                            setIsLoadingLocation(true);
+                                            getLocation();
                                         }}
                                         variant="blue"
                                         className="text-white shrink-0 cursor-pointer"
                                     >
-                                        📍 {isLoading ? "Detecting..." : "Use Current"}
+                                        📍 {isLoadingLocation ? "Detecting..." : "Use Current"}
                                     </Button>
                                 </div>
                                 {errors.location && (
@@ -396,7 +490,8 @@ const PostJobPage = () => {
 
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">Currency</label>
-                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                <select
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
                                     {...register("salaryCurrency")}
                                 >
                                     <option value="USD">USD ($)</option>
@@ -411,8 +506,10 @@ const PostJobPage = () => {
 
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-700">Salary Period</label>
-                                <select className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
-                                    {...register("salaryPeriod")} >
+                                <select
+                                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                                    {...register("salaryPeriod")}
+                                >
                                     <option value="yearly">Per Year</option>
                                     <option value="monthly">Per Month</option>
                                     <option value="hourly">Per Hour</option>
@@ -423,10 +520,8 @@ const PostJobPage = () => {
                             </div>
                         </div>
                     </section>
-                </div >
-            </form >
-        </div >
+                </div>
+            </form>
+        </div>
     );
-};
-
-export default PostJobPage;
+}
