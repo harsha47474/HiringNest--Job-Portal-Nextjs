@@ -1,13 +1,15 @@
-import { Button } from "@/src/components/ui/button";
-import { logoutAction } from "@/src/lib/actions/authActions";
 import Dashboard from "@/src/components/employer/EmployerDashboard";
 import { getCurrentUser } from "@/src/helper/getCurrentUser";
-
+import { getMyJobs } from "@/src/lib/actions/jobActions";
 
 export default async function EmployerDashboard() {
+    const user = await getCurrentUser();
+    const jobsResponse = await getMyJobs();
+    const jobs = jobsResponse.success ? jobsResponse.myJobs : [];
+
     return (
         <div>
-            <Dashboard user={await getCurrentUser()} />
+            <Dashboard user={user} jobs={jobs} />
         </div>
     )
 }
