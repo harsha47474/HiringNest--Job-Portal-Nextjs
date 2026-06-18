@@ -35,11 +35,11 @@ const ApplicantSidebar = ({ user, className = "" }: { user: any; className?: str
       {/* Explore Section */}
       <div className="flex flex-col space-y-1 mb-6">
         <p className="text-xs font-semibold text-gray-500 mb-2">EXPLORE</p>
-        <Link href="/applicant/overview">
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Overview" active={pathname === "/applicant/overview"} />
+        <Link href="/applicant/dashboard">
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Overview" active={pathname === "/applicant/dashboard"} />
         </Link>
-        <Link href="/applicant/find-jobs">
-          <SidebarItem icon={<Search size={18} />} label="Find Jobs" active={pathname === "/applicant/find-jobs"} />
+        <Link href="/applicant/jobs">
+          <SidebarItem icon={<Search size={18} />} label="Find Jobs" active={pathname === "/applicant/jobs"} />
         </Link>
         <Link href="/applicant/applied-jobs">
           <SidebarItem icon={<Briefcase size={18} />} label="Applied Jobs" active={pathname === "/applicant/applied-jobs"} />

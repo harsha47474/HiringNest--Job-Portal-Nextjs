@@ -46,7 +46,7 @@ export default function JobCard({ job, onDuplicate, onClose, onDelete, onPublish
 
 
     return (
-        <div className="flex justify-between items-center bg-white border rounded-lg p-4 shadow-sm hover:border-black/30">
+        <div className="flex justify-between items-center bg-white border  hover:border-black/30">
             <div>
                 <h2 className="text-lg font-semibold">{job.title}</h2>
                 <div className="flex gap-2 mt-2">
