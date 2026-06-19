@@ -54,13 +54,20 @@ const ApplicantFindJobsPage = () => {
                     className="flex-1 border border-gray-200 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <select className="border border-gray-200 rounded-md px-3 py-2 text-sm">
-                    <option>All locations</option>
-                </select>
-                <select className="border border-gray-200 rounded-md px-3 py-2 text-sm">
                     <option>All types</option>
+                    <option>Full Time</option>
+                    <option>Part Time</option>
+                    <option>Contract</option>
+                    <option>Freelancer</option>
+                    <option>Internship</option>
                 </select>
                 <select className="border border-gray-200 rounded-md px-3 py-2 text-sm">
                     <option>All levels</option>
+                    <option>Entry</option>
+                    <option>Mid</option>
+                    <option>Senior</option>
+                    <option>Lead</option>
+                    <option>Manager</option>
                 </select>
             </div>
 
