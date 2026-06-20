@@ -2,7 +2,8 @@
 
 import { postAJobAction } from "@/src/lib/actions/jobActions";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import TiptapEditor from "../ui/tiptap-editor";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { getCurrentLocation } from "@/src/helper/getCurrentLocation";
@@ -26,6 +27,7 @@ const PostJobPage = () => {
         setValue,
         watch,
         reset,
+        control,
     } = useForm<JobSchemaType>({
         resolver: zodResolver(jobSchema),
         defaultValues: {
@@ -145,11 +147,13 @@ const PostJobPage = () => {
 
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Description</label>
-                                <textarea
-                                    placeholder="Describe the role, responsibilities, and what success looks like..."
-                                    rows={5}
-                                    {...register("description")}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 focus:ring-1 focus:ring-blue-500"
+                                <p className="text-xs text-gray-500 mb-2 mt-1">Description should follow the structure of About, Responsibility, and Requirements sections.</p>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TiptapEditor value={field.value} onChange={field.onChange} />
+                                    )}
                                 />
                                 {errors.description && (
                                     <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>

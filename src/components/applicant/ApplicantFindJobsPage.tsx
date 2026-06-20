@@ -3,6 +3,8 @@
 import { getAllJobs } from '@/src/lib/actions/applicantJobActions'
 import React, { useEffect, useState } from 'react'
 import { MapPin, Clock } from "lucide-react";
+import Link from 'next/link';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 type jobSchema = {
     id: number;
@@ -24,6 +26,13 @@ type jobSchema = {
 const ApplicantFindJobsPage = () => {
     const [jobs, setJobs] = useState<jobSchema[]>([])
     const [currentPage, setCurrentPage] = useState(1);
+    
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchQuery = searchParams.get('q') || '';
+    const typeFilter = searchParams.get('type') || '';
+    const levelFilter = searchParams.get('level') || '';
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -38,36 +47,90 @@ const ApplicantFindJobsPage = () => {
     }, [])
 
     const jobsPerPage = 4;
-    const totalPages = Math.ceil(jobs.length / jobsPerPage);
-    const currentJobs = jobs.slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage);
+
+    const filteredJobs = jobs.filter((job) => {
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const titleMatch = job.title?.toLowerCase().includes(q);
+            const companyMatch = job.companyName?.toLowerCase().includes(q);
+            const tagsMatch = job.tags?.toLowerCase().includes(q);
+            if (!titleMatch && !companyMatch && !tagsMatch) return false;
+        }
+
+        if (typeFilter && job.jobType !== typeFilter) {
+            return false;
+        }
+
+        if (levelFilter && job.jobLevel !== levelFilter) {
+            return false;
+        }
+
+        return true;
+    });
+
+    const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+    const currentJobs = filteredJobs.slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage);
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const params = new URLSearchParams(searchParams);
+        if (e.target.value) {
+            params.set('q', e.target.value);
+        } else {
+            params.delete('q');
+        }
+        setCurrentPage(1);
+        router.replace(`${pathname}?${params.toString()}`);
+    }
+
+    const handleFilterChange = (key: string, value: string) => {
+        const params = new URLSearchParams(searchParams);
+        if (value) {
+            params.set(key, value);
+        } else {
+            params.delete(key);
+        }
+        setCurrentPage(1);
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
 
     return (
         <div className="min-h-screen w-full bg-white p-6">
             <h1 className="text-2xl font-semibold text-gray-900 mb-1">Find your next role</h1>
-            <p className="text-sm text-gray-600 mb-6">{jobs.length} jobs matching your filters</p>
+            <p className="text-sm text-gray-600 mb-6">{filteredJobs.length} jobs matching your filters</p>
 
             {/* Search and filters */}
             <div className="flex flex-wrap gap-3 mb-6">
                 <input
                     type="text"
                     placeholder="Job title, company, or skill"
+                    value={searchQuery}
+                    onChange={handleSearch}
                     className="flex-1 border border-gray-200 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
-                <select className="border border-gray-200 rounded-md px-3 py-2 text-sm">
-                    <option>All types</option>
-                    <option>Full Time</option>
-                    <option>Part Time</option>
-                    <option>Contract</option>
-                    <option>Freelancer</option>
-                    <option>Internship</option>
+                <select 
+                    value={typeFilter}
+                    onChange={(e) => handleFilterChange('type', e.target.value)}
+                    className="border border-gray-200 rounded-md px-3 py-2 text-sm"
+                >
+                    <option value="">All types</option>
+                    <option value="full_time">Full Time</option>
+                    <option value="part_time">Part Time</option>
+                    <option value="contract">Contract</option>
+                    <option value="freelance">Freelance</option>
+                    <option value="internship">Internship</option>
                 </select>
-                <select className="border border-gray-200 rounded-md px-3 py-2 text-sm">
-                    <option>All levels</option>
-                    <option>Entry</option>
-                    <option>Mid</option>
-                    <option>Senior</option>
-                    <option>Lead</option>
-                    <option>Manager</option>
+                <select 
+                    value={levelFilter}
+                    onChange={(e) => handleFilterChange('level', e.target.value)}
+                    className="border border-gray-200 rounded-md px-3 py-2 text-sm"
+                >
+                    <option value="">All levels</option>
+                    <option value="entry">Entry</option>
+                    <option value="mid">Mid</option>
+                    <option value="senior">Senior</option>
+                    <option value="lead">Lead</option>
+                    <option value="manager">Manager</option>
                 </select>
             </div>
 
@@ -108,9 +171,11 @@ const ApplicantFindJobsPage = () => {
                                 <p className="text-sm font-medium text-gray-900">
                                     ₹{job.minSalary?.toLocaleString()} – ₹{job.maxSalary?.toLocaleString()}
                                 </p>
-                                <button className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded-md cursor-pointer hover:bg-blue-700 transition">
-                                    Apply
-                                </button>
+                                <Link href = {`/applicant/jobs/${job.id}`}>
+                                    <button className="bg-blue-600 text-white text-sm px-4 py-1.5 rounded-md cursor-pointer hover:bg-blue-700 transition">
+                                        View
+                                    </button>
+                                </Link>
                             </div>
                         </div>
                     );

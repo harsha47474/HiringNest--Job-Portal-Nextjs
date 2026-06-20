@@ -9,8 +9,7 @@ export const jobSchema = z
 
         description: z
             .string()
-            .min(50, "Description should be at least 100 characters")
-            .max(500),
+            .min(50, "Description should be at least 100 characters"),
 
         tags: z
             .array(z.string())
