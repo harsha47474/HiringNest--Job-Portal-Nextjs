@@ -85,7 +85,7 @@ export default function JobDescriptionPage({ jobId }: { jobId: number }) {
             <div className="flex justify-between items-center mb-6">
                 <Link href="">
                     <button className="text-sm text-gray-600 hover:text-gray-800">
-                        ← Back to jobs
+                        ← Back to jobs page
                     </button>
                 </Link>
                 <div className="flex gap-2">
