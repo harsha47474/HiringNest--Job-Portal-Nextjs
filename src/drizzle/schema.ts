@@ -126,6 +126,7 @@ export const applicants = mysqlTable("applicants", {
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
 
+  profileImageUrl: text("profile_image_url"),
   biography: text("biography"),
   dateOfBirth: date("date_of_birth"),
   nationality: varchar("nationality", { length: 100 }),
@@ -150,6 +151,18 @@ export const applicants = mysqlTable("applicants", {
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
 
+// resumes schema
+export const resumes = mysqlTable("resumes", {
+  id: int("id").autoincrement().primaryKey(),
+  applicantId: int("applicant_id")
+    .notNull()
+    .references(() => applicants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  url: text("url").notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().onUpdateNow().notNull(),
+});
+
 
 
 // relationships
@@ -166,6 +179,17 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   // One user can have many sessions
   sessions: many(sessions),
+}));
+
+export const applicantsRelations = relations(applicants, ({ many }) => ({
+  resumes: many(resumes),
+}));
+
+export const resumesRelations = relations(resumes, ({ one }) => ({
+  applicant: one(applicants, {
+    fields: [resumes.applicantId],
+    references: [applicants.id],
+  }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({

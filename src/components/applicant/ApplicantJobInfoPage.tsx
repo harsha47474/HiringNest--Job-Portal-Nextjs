@@ -149,7 +149,25 @@ export default function JobDescriptionPage({ jobId }: { jobId: number }) {
                 {/* Right Sidebar */}
                 <div className="space-y-6">
                     <div className="border rounded-lg p-6 shadow-sm">
-                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md mb-4">
+                        <button 
+                            onClick={async () => {
+                                const { getApplicantProfileAction } = await import("@/src/lib/actions/applicantProfileActions");
+                                const applicant = await getApplicantProfileAction();
+                                if (!applicant || 'success' in applicant || !applicant.biography || !applicant.experience) {
+                                    const { toast } = await import("sonner");
+                                    toast.error("Please set up your profile and provide a biography and experience first.", {
+                                        action: {
+                                            label: "Go to Settings",
+                                            onClick: () => window.location.href = "/applicant/profile"
+                                        }
+                                    });
+                                    return;
+                                }
+                                const { toast } = await import("sonner");
+                                toast.success("Application started (TODO)");
+                            }}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md mb-4"
+                        >
                             Apply Now
                         </button>
                         <div className="space-y-2 text-gray-700 text-sm">

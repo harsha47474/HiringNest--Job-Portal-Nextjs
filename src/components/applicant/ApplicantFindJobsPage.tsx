@@ -6,6 +6,13 @@ import { MapPin, Clock } from "lucide-react";
 import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
+
+/* TODO : 1. the job upload days not working properly, make it real time
+          2. Back button thik krna hai
+          3. About Page layout thik krna hai
+          4. expiry functionality thik krna hai nubra shit
+*/
+
 type jobSchema = {
     id: number;
     title: string;
