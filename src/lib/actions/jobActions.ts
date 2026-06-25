@@ -146,7 +146,7 @@ export const updateJobAction = async (id: number, data: Partial<MyJobType>) => {
             return { success: false, message: "Unauthorized or job not found" };
         }
 
-        // Exclude fields that are read-only
+
         const { id: _, employerId: __, createdAt: ___, updatedAt: ____, ...updateData } = data;
 
         await db.update(jobs).set(updateData).where(eq(jobs.id, id));
