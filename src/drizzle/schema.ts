@@ -151,7 +151,6 @@ export const applicants = mysqlTable("applicants", {
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
 
-// resumes schema
 export const resumes = mysqlTable("resumes", {
   id: int("id").autoincrement().primaryKey(),
   applicantId: int("applicant_id")
@@ -159,8 +158,40 @@ export const resumes = mysqlTable("resumes", {
     .references(() => applicants.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   url: text("url").notNull(),
+  size: int("size"),
+  isPrimary: boolean("is_primary").default(false).notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().onUpdateNow().notNull(),
+});
+
+// applications schema
+export const applications = mysqlTable("applications", {
+  id: int("id").autoincrement().primaryKey(),
+  applicantId: int("applicant_id")
+    .notNull()
+    .references(() => applicants.id, { onDelete: "cascade" }),
+  jobId: int("job_id")
+    .notNull()
+    .references(() => jobs.id, { onDelete: "cascade" }),
+  resumeId: int("resume_id")
+    .notNull()
+    .references(() => resumes.id, { onDelete: "cascade" }),
+  coverLetter: text("cover_letter"),
+  status: mysqlEnum("status", ["pending", "reviewed", "accepted", "rejected"]).default("pending").notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().onUpdateNow().notNull(),
+});
+
+// saved_jobs schema
+export const savedJobs = mysqlTable("saved_jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  applicantId: int("applicant_id")
+    .notNull()
+    .references(() => applicants.id, { onDelete: "cascade" }),
+  jobId: int("job_id")
+    .notNull()
+    .references(() => jobs.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
 });
 
 
@@ -183,13 +214,16 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 
 export const applicantsRelations = relations(applicants, ({ many }) => ({
   resumes: many(resumes),
+  applications: many(applications),
+  savedJobs: many(savedJobs),
 }));
 
-export const resumesRelations = relations(resumes, ({ one }) => ({
+export const resumesRelations = relations(resumes, ({ one, many }) => ({
   applicant: one(applicants, {
     fields: [resumes.applicantId],
     references: [applicants.id],
   }),
+  applications: many(applications),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -200,10 +234,38 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   }),
 }));
 
-export const jobsRelations = relations(jobs, ({ one }) => ({
+export const jobsRelations = relations(jobs, ({ one, many }) => ({
   // Each job belongs to one employer
   employer: one(employers, {
     fields: [jobs.employerId],
     references: [employers.id],
+  }),
+  applications: many(applications),
+  savedJobs: many(savedJobs),
+}));
+
+export const applicationsRelations = relations(applications, ({ one }) => ({
+  applicant: one(applicants, {
+    fields: [applications.applicantId],
+    references: [applicants.id],
+  }),
+  job: one(jobs, {
+    fields: [applications.jobId],
+    references: [jobs.id],
+  }),
+  resume: one(resumes, {
+    fields: [applications.resumeId],
+    references: [resumes.id],
+  }),
+}));
+
+export const savedJobsRelations = relations(savedJobs, ({ one }) => ({
+  applicant: one(applicants, {
+    fields: [savedJobs.applicantId],
+    references: [applicants.id],
+  }),
+  job: one(jobs, {
+    fields: [savedJobs.jobId],
+    references: [jobs.id],
   }),
 }));

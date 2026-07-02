@@ -15,6 +15,8 @@ export const applicantProfileSchema = z.object({
     z.object({
       name: z.string(),
       url: z.string(),
+      size: z.number().optional(),
+      isPrimary: z.boolean().optional(),
     })
   ).max(5, "You can upload a maximum of 5 resumes"),
 });
