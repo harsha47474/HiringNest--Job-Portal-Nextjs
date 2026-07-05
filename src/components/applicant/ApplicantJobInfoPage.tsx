@@ -1,6 +1,5 @@
 "use client"
-import { fetchJobById } from "@/src/lib/actions/applicantJobActions";
-import { checkHasAppliedAction, checkHasSavedJobAction, toggleSaveJobAction, applyForJobAction } from "@/src/lib/actions/applicantApplicationActions";
+import { toggleSaveJobAction, applyForJobAction } from "@/src/lib/actions/applicantApplicationActions";
 import { checkApplicantProfileCompletionAction } from "@/src/lib/actions/applicantProfileActions";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -31,12 +30,24 @@ type JobSchema = {
     companyDescription: string | null;
 }
 
-export default function JobDescriptionPage({ jobId }: { jobId: number }) {
+export default function JobDescriptionPage({ 
+    jobId, 
+    initialJob,
+    initialHasApplied,
+    initialIsSaved
+}: { 
+    jobId: number, 
+    initialJob: JobSchema | null,
+    initialHasApplied: boolean,
+    initialIsSaved: boolean
+}) {
     const router = useRouter();
-    const [job, setJob] = useState<JobSchema | null>(null);
-    const [hasApplied, setHasApplied] = useState(false);
-    const [isSaved, setIsSaved] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const job = initialJob;
+    const [hasApplied, setHasApplied] = useState(initialHasApplied);
+    const [isSaved, setIsSaved] = useState(initialIsSaved);
+    
+    // We don't need isLoading anymore since data is passed as props
+    const isLoading = false;
 
     const [showApplyModal, setShowApplyModal] = useState(false);
     const [resumes, setResumes] = useState<any[]>([]);
@@ -44,27 +55,11 @@ export default function JobDescriptionPage({ jobId }: { jobId: number }) {
     const [coverLetter, setCoverLetter] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        const fetchDetails = async () => {
-            setIsLoading(true);
-            const fetchedJob = await fetchJobById(jobId);
-            if (fetchedJob) setJob(fetchedJob as any);
-            
-            const applied = await checkHasAppliedAction(jobId);
-            setHasApplied(applied);
-
-            const saved = await checkHasSavedJobAction(jobId);
-            setIsSaved(saved);
-            
-            setIsLoading(false);
-        };
-        fetchDetails();
-    }, [jobId]);
-
     const handleSaveToggle = async () => {
         const result = await toggleSaveJobAction(jobId);
         if (result.success) {
-            setIsSaved(result.saved);
+            if(result.saved) setIsSaved(true);
+            else setIsSaved(false);
             toast.success(result.message);
         } else {
             toast.error(result.message);

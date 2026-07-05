@@ -1,7 +1,6 @@
 'use client'
 
-import { getAllJobs } from '@/src/lib/actions/applicantJobActions'
-import React, { useEffect, useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { MapPin, Clock } from "lucide-react";
 import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -30,8 +29,8 @@ type jobSchema = {
     companyLogo: string | null;
 }
 
-const ApplicantFindJobsPage = () => {
-    const [jobs, setJobs] = useState<jobSchema[]>([])
+const ApplicantFindJobsPage = ({ initialJobs = [] }: { initialJobs?: jobSchema[] }) => {
+    const jobs = initialJobs;
     const [currentPage, setCurrentPage] = useState(1);
     
     const searchParams = useSearchParams();
@@ -41,45 +40,37 @@ const ApplicantFindJobsPage = () => {
     const typeFilter = searchParams.get('type') || '';
     const levelFilter = searchParams.get('level') || '';
 
-    useEffect(() => {
-        const fetchJobs = async () => {
-            const allJobs = await getAllJobs();
-            if (!allJobs) {
-                return <>No Jobs Found</>
-            }
-            setJobs(allJobs)
-            console.log(allJobs)
-        }
-        fetchJobs()
-    }, [])
-
     const jobsPerPage = 4;
 
-    const filteredJobs = jobs.filter((job) => {
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            const titleMatch = job.title?.toLowerCase().includes(q);
-            const companyMatch = job.companyName?.toLowerCase().includes(q);
-            const tagsMatch = job.tags?.toLowerCase().includes(q);
-            if (!titleMatch && !companyMatch && !tagsMatch) return false;
-        }
+    const filteredJobs = useMemo(() => {
+        return jobs.filter((job) => {
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                const titleMatch = job.title?.toLowerCase().includes(q);
+                const companyMatch = job.companyName?.toLowerCase().includes(q);
+                const tagsMatch = job.tags?.toLowerCase().includes(q);
+                if (!titleMatch && !companyMatch && !tagsMatch) return false;
+            }
 
-        if (typeFilter && job.jobType !== typeFilter) {
-            return false;
-        }
+            if (typeFilter && job.jobType !== typeFilter) {
+                return false;
+            }
 
-        if (levelFilter && job.jobLevel !== levelFilter) {
-            return false;
-        }
+            if (levelFilter && job.jobLevel !== levelFilter) {
+                return false;
+            }
 
-        return true;
-    });
+            return true;
+        });
+    }, [jobs, searchQuery, typeFilter, levelFilter]);
 
     const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
-    const currentJobs = filteredJobs.slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage);
+    const currentJobs = useMemo(() => {
+        return filteredJobs.slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage);
+    }, [filteredJobs, currentPage, jobsPerPage]);
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const params = new URLSearchParams(searchParams);
+    const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const params = new URLSearchParams(searchParams.toString());
         if (e.target.value) {
             params.set('q', e.target.value);
         } else {
@@ -87,10 +78,10 @@ const ApplicantFindJobsPage = () => {
         }
         setCurrentPage(1);
         router.replace(`${pathname}?${params.toString()}`);
-    }
+    }, [searchParams, pathname, router]);
 
-    const handleFilterChange = (key: string, value: string) => {
-        const params = new URLSearchParams(searchParams);
+    const handleFilterChange = useCallback((key: string, value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
         if (value) {
             params.set(key, value);
         } else {
@@ -98,7 +89,7 @@ const ApplicantFindJobsPage = () => {
         }
         setCurrentPage(1);
         router.replace(`${pathname}?${params.toString()}`);
-    };
+    }, [searchParams, pathname, router]);
 
 
     return (
@@ -162,7 +153,7 @@ const ApplicantFindJobsPage = () => {
                                         <span>{job.jobType}</span>
                                         <span>{job.jobLevel}</span>
                                         <span className="flex items-center">
-                                            <Clock size={12} className="mr-1" /> {Math.floor(Math.random() * 5) + 1}d ago
+                                            <Clock size={12} className="mr-1" /> {Math.floor((Date.now() - new Date(job.createdAt).getTime()) / (1000 * 60 * 60 * 24))}d ago
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
