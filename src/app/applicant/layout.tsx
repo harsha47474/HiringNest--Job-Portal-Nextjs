@@ -20,7 +20,7 @@ export default async function RootLayout({
             <div className="flex min-h-screen bg-background">
                 <ApplicantSidebar user={user} className="fixed left-0 top-0 h-screen w-64" />
                 <div className="flex flex-col w-full pl-64">
-                    {/* <Navbar user={user} /> */}
+                    <Navbar user={user} />
                     <main className="mt-5 px-5">
                         {children}
                     </main>

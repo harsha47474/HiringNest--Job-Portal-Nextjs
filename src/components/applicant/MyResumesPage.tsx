@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
-import { getApplicantProfileAction, uploadApplicantFileAction, uploadResumeAction, deleteResumeAction, setPrimaryResumeAction } from "@/src/lib/actions/applicantProfileActions";
+import { getApplicantProfileAction, uploadApplicantFileAction, uploadResumeAction, deleteResumeAction, setPrimaryResumeAction, removePrimaryResumeAction } from "@/src/lib/actions/applicantProfileActions";
 import { toast } from "sonner";
 import { FileText, MoreHorizontal, Star, Trash2, Download, Plus } from "lucide-react";
 
@@ -107,6 +107,17 @@ export default function MyResumesPage() {
         setShowMenuId(null);
     };
 
+    const handleRemovePrimary = async (id: number) => {
+        const result = await removePrimaryResumeAction(id);
+        if (result.success) {
+            toast.success(result.message);
+            fetchResumes();
+        } else {
+            toast.error(result.message);
+        }
+        setShowMenuId(null);
+    };
+
     const formatSize = (bytes: number) => {
         if (!bytes) return "Unknown size";
         if (bytes < 1024) return bytes + " B";
@@ -120,11 +131,11 @@ export default function MyResumesPage() {
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-6 min-h-screen">
+        <div className="min-h-screen w-full bg-white p-3 relative">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">My Resumes</h1>
-                    <p className="text-gray-500">Upload tailored resumes for different job categories.</p>
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-2">My Resumes</h1>
+                    <p className="text-gray-500 text-sm">Upload tailored resumes for different job categories.</p>
                 </div>
                 {resumes.length < 5 && (
                     <div>
@@ -168,16 +179,16 @@ export default function MyResumesPage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {resumes.map((resume) => (
                         <div key={resume.id} className="border rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col h-full relative">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="w-12 h-12 flex-shrink-0 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
-                                    <FileText className="w-6 h-6" />
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="w-10 h-10 flex-shrink-0 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                                    <FileText className="w-5 h-5" />
                                 </div>
                                 <div className="relative">
                                     <button 
                                         onClick={() => setShowMenuId(showMenuId === resume.id ? null : resume.id)}
                                         className="text-gray-400 hover:text-gray-600 p-1"
                                     >
-                                        <MoreHorizontal className="w-6 h-6" />
+                                        <MoreHorizontal className="w-5 h-5" />
                                     </button>
                                     
                                     {showMenuId === resume.id && (
@@ -190,12 +201,19 @@ export default function MyResumesPage() {
                                             >
                                                 <Download className="w-4 h-4" /> Download
                                             </a>
-                                            {!resume.isPrimary && (
+                                            {!resume.isPrimary ? (
                                                 <button 
                                                     onClick={() => handleSetPrimary(resume.id)}
                                                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
                                                 >
                                                     <Star className="w-4 h-4" /> Set as Primary
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => handleRemovePrimary(resume.id)}
+                                                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
+                                                >
+                                                    <Star className="w-4 h-4 text-yellow-500" /> Remove Primary
                                                 </button>
                                             )}
                                             <button 
@@ -209,7 +227,7 @@ export default function MyResumesPage() {
                                 </div>
                             </div>
 
-                            <div className="flex-1">
+                            <div className="flex-1 mb-4">
                                 <div className="flex items-center gap-2 mb-1">
                                     <h3 className="font-semibold text-lg text-gray-900 truncate">{resume.name}</h3>
                                     {resume.isPrimary && (
@@ -218,10 +236,16 @@ export default function MyResumesPage() {
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-gray-500 text-sm truncate mb-4">{resume.name}.pdf</p>
+                                <p className="text-gray-500 text-sm truncate">{resume.name.toLowerCase().replace(/\s+/g, '-')}.pdf</p>
                             </div>
 
-                            <div className="flex justify-between items-center text-sm text-gray-500 pt-4 border-t border-gray-50">
+                            <div className="mb-6">
+                                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                                    {resume.name.split(" ")[0] || "General"}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center text-sm text-gray-500 mt-auto">
                                 <span>Updated {formatDate(resume.updatedAt)}</span>
                                 <span>{formatSize(resume.size)}</span>
                             </div>
@@ -234,7 +258,7 @@ export default function MyResumesPage() {
             {showUploadModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-                        <h2 className="text-xl font-bold mb-4">Upload Resume</h2>
+                        <h2 className="text-md font-semibold mb-4">Upload Resume</h2>
                         
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Resume Name</label>

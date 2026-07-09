@@ -56,11 +56,11 @@ export default function SavedJobsPage() {
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-6 min-h-screen">
+        <div className="min-h-screen w-full bg-white p-3 relative">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Saved Jobs</h1>
-                    <p className="text-gray-500">{savedJobs.length} jobs in your shortlist</p>
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Saved Jobs</h1>
+                    <p className="text-gray-500 text-sm">{savedJobs.length} jobs in your shortlist</p>
                 </div>
                 <div className="w-full md:w-72">
                     <input 
@@ -126,26 +126,21 @@ export default function SavedJobsPage() {
                                 {tags.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mb-6">
                                         {tags.slice(0, 3).map((tag: string, index: number) => (
-                                            <span key={index} className="px-3 py-1 bg-gray-50 border border-gray-100 rounded-full text-xs text-gray-600 font-medium">
+                                            <span key={index} className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-700">
                                                 {tag}
                                             </span>
                                         ))}
-                                        {tags.length > 3 && (
-                                            <span className="px-3 py-1 bg-gray-50 border border-gray-100 rounded-full text-xs text-gray-600 font-medium">
-                                                +{tags.length - 3}
-                                            </span>
-                                        )}
                                     </div>
                                 )}
 
-                                <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-auto">
-                                    <div className="font-semibold text-gray-900">
+                                <div className="flex justify-between items-center mt-auto">
+                                    <div className="font-bold text-gray-900 text-lg">
                                         {formatSalary(job.minSalary, job.maxSalary, job.salaryCurrency)}
                                     </div>
                                     <Link href={`/applicant/jobs/${job.id}`}>
-                                        <button className="flex items-center gap-1 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                                             View details
-                                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                         </button>
                                     </Link>
                                 </div>

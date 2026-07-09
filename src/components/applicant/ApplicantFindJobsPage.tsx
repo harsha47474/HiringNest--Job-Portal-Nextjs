@@ -93,7 +93,7 @@ const ApplicantFindJobsPage = ({ initialJobs = [] }: { initialJobs?: jobSchema[]
 
 
     return (
-        <div className="min-h-screen w-full bg-white p-6">
+        <div className="min-h-screen w-full bg-white p-3 relative">
             <h1 className="text-2xl font-semibold text-gray-900 mb-1">Find your next role</h1>
             <p className="text-sm text-gray-600 mb-6">{filteredJobs.length} jobs matching your filters</p>
 

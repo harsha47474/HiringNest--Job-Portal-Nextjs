@@ -203,3 +203,17 @@ export const checkApplicantProfileCompletionAction = async () => {
         return { success: false, isComplete: false, message: "Error checking profile", resumes: [] };
     }
 };
+
+export const removePrimaryResumeAction = async (resumeId: number) => {
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser) return { success: false, message: "Not authenticated" };
+
+        await db.update(resumes).set({ isPrimary: false }).where(eq(resumes.id, resumeId));
+
+        return { success: true, message: "Resume is no longer primary." };
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: "Failed to update resume." };
+    }
+};
