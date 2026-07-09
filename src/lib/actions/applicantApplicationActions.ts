@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/src/config/db";
-import { applications, savedJobs, jobs, employers } from "@/src/drizzle/schema";
+import { applications, savedJobs, jobs, employers, resumes } from "@/src/drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { getCurrentApplicantDetails } from "@/src/helper/getCurrentApplicantDetails";
 
@@ -156,3 +156,33 @@ export const getSavedJobsAction = async () => {
         return [];
     }
 };
+
+
+export const getAppliedJobsAction = async ({id}: {id: number}) => {
+    try {
+        const applicantId = (await getCurrentApplicantDetails())?.id;
+        if (!applicantId) return [];
+
+        const appliedJobsResult = await db.select({
+            id: jobs.id,
+            title: jobs.title,
+            location: jobs.location,
+            jobType: jobs.jobType,
+            tags: jobs.tags,
+            createdAt: applications.createdAt,
+            status: applications.status,
+            resumeName: resumes.name,
+        })
+        .from(applications)
+        .innerJoin(jobs, eq(applications.jobId, jobs.id))
+        .leftJoin(employers, eq(jobs.employerId, employers.id))
+        .leftJoin(resumes, eq(applications.resumeId, resumes.id))
+        .where(eq(applications.applicantId, applicantId))
+        .orderBy(desc(applications.createdAt));
+
+        return appliedJobsResult;
+    } catch (error) {
+        console.error("Error fetching applied jobs:", error);
+        return [];
+    }
+}

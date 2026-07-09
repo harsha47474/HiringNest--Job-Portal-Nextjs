@@ -4,7 +4,6 @@ import Link from "next/link";
 import { getCurrentApplicantDetails } from "@/src/helper/getCurrentApplicantDetails";
 
 const Navbar = async ({ user }: { user: any }) => {
-    const applicant = await getCurrentApplicantDetails();
 
     return (
         <nav className="flex items-center justify-between bg-white border-b border-gray-200 px-6 py-3">

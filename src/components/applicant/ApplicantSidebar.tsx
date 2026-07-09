@@ -41,8 +41,8 @@ const ApplicantSidebar = ({ user, className = "" }: { user: any; className?: str
         <Link href="/applicant/jobs">
           <SidebarItem icon={<Search size={18} />} label="Find Jobs" active={pathname === "/applicant/jobs"} />
         </Link>
-        <Link href="/applicant/applied-jobs">
-          <SidebarItem icon={<Briefcase size={18} />} label="Applied Jobs" active={pathname === "/applicant/applied-jobs"} />
+        <Link href="/applicant/applied">
+          <SidebarItem icon={<Briefcase size={18} />} label="Applied Jobs" active={pathname === "/applicant/applied"} />
         </Link>
         <Link href="/applicant/saved-jobs">
           <SidebarItem icon={<Bookmark size={18} />} label="Saved Jobs" active={pathname === "/applicant/saved-jobs"} />
