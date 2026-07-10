@@ -6,9 +6,11 @@ import { eq } from "drizzle-orm"
 export const getCurrentEmployerDetails = async () => {
     try {
         const currentUser = await getCurrentUser();
+        console.log("Current User:", currentUser);
         if (!currentUser) return null;
 
         const [employerDetails] = await db.select().from(employers).where(eq(employers.id, currentUser.id))
+        if(employerDetails === undefined) return { ...currentUser, employerDetails: null, isProfileCompleted: false };
 
         let isProfileCompleted = false;
         if (

@@ -13,6 +13,7 @@ import {
   Globe2,
   Settings,
   LogOut,
+  FileText,
 } from "lucide-react";
 import { logoutAction } from "@/src/lib/actions/authActions";
 
@@ -50,6 +51,9 @@ const EmployerSidebar = ({ user, className = "" }: { user: any; className?: stri
         </Link>
         <Link href="/employer/saved-candidates">
           <SidebarItem icon={<Bookmark size={18} />} label="Saved Candidates" active={pathname === "/employer/saved-candidates"} />
+        </Link>
+        <Link href="/employer/applications">
+          <SidebarItem icon={<FileText size={18} />} label="Applications" active={pathname ==="/employer/applications"} />
         </Link>
       </div>
 

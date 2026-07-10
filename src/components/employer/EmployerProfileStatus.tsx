@@ -34,7 +34,7 @@ export async function EmployerProfileCompletionStatus() {
         </ItemContent>
         <ItemActions>
           <Button size="sm" variant="destructive" className="bg-destructive text-white hover:bg-destructive/80 border-white">
-            <Link href="/employer/settings">Complete Profile</Link>
+            <Link href="/employer/profile">Complete Profile</Link>
           </Button>
         </ItemActions>
       </Item>
