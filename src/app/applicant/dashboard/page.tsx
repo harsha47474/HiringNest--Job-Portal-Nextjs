@@ -1,19 +1,24 @@
-import { Button } from "@/src/components/ui/button";
+import ApplicantDashboardPage from "@/src/components/applicant/ApplicantDashboardPage";
 import { getCurrentUser } from "@/src/helper/getCurrentUser";
-import { logoutAction } from "@/src/lib/actions/authActions";
 import { redirect } from "next/navigation";
+import { getApplicantDashboardStats, getRecentApplications, getRecentlyUploadedJobs } from "@/src/lib/actions/applicantDashboardActions";
 
 export default async function ApplicantDashboard() {
     const user = await getCurrentUser();
     if (!user) {
         redirect("/login")
     }
+
+    const stats = await getApplicantDashboardStats();
+    const recentApps = await getRecentApplications();
+    const recentJobs = await getRecentlyUploadedJobs();
+
     return (
-        <div>
-            <h1>Applicant Dashboard</h1>
-            <Button variant="outline" onClick={logoutAction}>
-                Logout
-            </Button>
-        </div>
+        <ApplicantDashboardPage 
+            user={user}
+            stats={stats}
+            recentApps={recentApps}
+            recentJobs={recentJobs}
+        />
     )
 }

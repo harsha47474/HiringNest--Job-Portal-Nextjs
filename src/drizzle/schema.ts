@@ -194,6 +194,18 @@ export const savedJobs = mysqlTable("saved_jobs", {
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
 });
 
+// saved_candidates schema
+export const savedCandidates = mysqlTable("saved_candidates", {
+  id: int("id").autoincrement().primaryKey(),
+  employerId: int("employer_id")
+    .notNull()
+    .references(() => employers.id, { onDelete: "cascade" }),
+  applicantId: int("applicant_id")
+    .notNull()
+    .references(() => applicants.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+});
+
 
 
 // relationships
@@ -216,6 +228,7 @@ export const applicantsRelations = relations(applicants, ({ many }) => ({
   resumes: many(resumes),
   applications: many(applications),
   savedJobs: many(savedJobs),
+  savedCandidates: many(savedCandidates),
 }));
 
 export const resumesRelations = relations(resumes, ({ one, many }) => ({
@@ -267,5 +280,21 @@ export const savedJobsRelations = relations(savedJobs, ({ one }) => ({
   job: one(jobs, {
     fields: [savedJobs.jobId],
     references: [jobs.id],
+  }),
+}));
+
+export const employersRelations = relations(employers, ({ many }) => ({
+  jobs: many(jobs),
+  savedCandidates: many(savedCandidates),
+}));
+
+export const savedCandidatesRelations = relations(savedCandidates, ({ one }) => ({
+  employer: one(employers, {
+    fields: [savedCandidates.employerId],
+    references: [employers.id],
+  }),
+  applicant: one(applicants, {
+    fields: [savedCandidates.applicantId],
+    references: [applicants.id],
   }),
 }));
