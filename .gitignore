@@ -40,4 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 DEPLOYMENT.md           
-
+PROJECT_GUIDE.md

@@ -20,7 +20,7 @@ export const registrationAction = async (data: BaseRegisterSchemaType) => {
 
         const { name, userName, email, password, role } = validatedData;
 
-        await db.transaction(async (tx) => {
+        const txResult = await db.transaction(async (tx) => {
             const [existingUser] = await tx.select().from(users).where(or(eq(users.email, email), eq(users.userName, userName)));
 
             if (existingUser) {
@@ -31,15 +31,15 @@ export const registrationAction = async (data: BaseRegisterSchemaType) => {
                 }
             }
 
-
-            console.log("Received form data:", { name, userName, email, password, role }); //logs (have to remove it later)
             const hashedPassword = await argon2.hash(password);
             const [result] = await tx.insert(users).values({ name, userName, email, password: hashedPassword, role });
 
             await createUserSessionAndSetCookie(result.insertId, tx);
+            
+            return { success: true, message: "Registration successful" };
         });
 
-        return { success: true, message: "Registration successful" };
+        return txResult;
     } catch (error) {
         console.error("Error during registration:", error);
         return { success: false, message: "Registration failed" };
@@ -80,7 +80,6 @@ export const loginAction = async (data: LoginSchemaType) => {
 export const logoutAction = async () => {
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value;
-    console.log("Logging out, session token:", token); //Debugging logs (have to remove it later)
     if (!token) {
         redirect("/login");
         return;
