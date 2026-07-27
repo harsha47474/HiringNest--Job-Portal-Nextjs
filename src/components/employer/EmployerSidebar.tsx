@@ -62,15 +62,6 @@ const EmployerSidebar = ({ user, className = "" }: { user: any; className?: stri
       {/* Account Section */}
       <div className="flex flex-col space-y-1 mb-6">
         <p className="text-xs font-semibold text-gray-500 mb-2">ACCOUNT</p>
-        <Link href="/employer/plans">
-          <SidebarItem icon={<CreditCard size={18} />} label="Plans & Billing" active={pathname === "/employer/plans"} />
-        </Link>
-        <Link href="/employer/companies">
-          <SidebarItem icon={<Globe2 size={18} />} label="All Companies" active={pathname === "/employer/companies"} />
-        </Link>
-        <Link href="/employer/settings">
-          <SidebarItem icon={<Settings size={18} />} label="Settings" active={pathname === "/employer/settings"} />
-        </Link>
       </div>
 
       {/* Logout */}

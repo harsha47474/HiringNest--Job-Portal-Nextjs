@@ -11,7 +11,11 @@ export default async function ApplicantAppliedJobs() {
 
     const applicant = await getApplicantProfileAction();
 
+    if (!applicant || ('success' in applicant && !applicant.success)) {
+        return <div>Applicant profile not found. Please create your profile first.</div>;
+    }
+
     return (
-        <AppliedJobsPage id={applicant?.id} />
+        <AppliedJobsPage applicantId={(applicant as any).id} />
     );
 }

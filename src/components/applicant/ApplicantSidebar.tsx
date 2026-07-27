@@ -60,9 +60,6 @@ const ApplicantSidebar = ({ user, className = "" }: { user: any; className?: str
         <Link href="/applicant/profile">
           <SidebarItem icon={<User size={18} />} label="Profile" active={pathname === "/applicant/profile"} />
         </Link>
-        <Link href="/applicant/settings">
-          <SidebarItem icon={<Settings size={18} />} label="Settings" active={pathname === "/applicant/settings"} />
-        </Link>
       </div>
 
       {/* Logout */}
