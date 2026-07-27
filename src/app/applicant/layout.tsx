@@ -15,6 +15,10 @@ export default async function RootLayout({
         redirect("/login");
     }
 
+    if (user.role !== "applicant") {
+        redirect("/employer/dashboard");
+    }
+
     return (
         <>
             <div className="flex min-h-screen bg-background">
